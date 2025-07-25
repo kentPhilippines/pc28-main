@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net.Http;
 
 namespace ImLibrary.IM
 {
@@ -13,19 +14,53 @@ namespace ImLibrary.IM
 
         public static void Login(string username, string pwssword)
         {
-            string loginUrl = IMConstant.ROBOT_SERVER + "/login";
-            Dictionary<string, object> postData = new Dictionary<string, object>();
-            postData["username"] = username;
-            postData["password"] = pwssword;
-            JObject jo = HttpHelper.Instance.HttpPost<JObject>(loginUrl, postData.ToJson());
-            if ((int)jo["code"] == 200)
+            try
             {
-                HttpHelper.Instance.Headers.TryAdd("Authorization", (string)jo["token"]);
-                Debug.WriteLine("登录成功");
+                string loginUrl = IMConstant.ROBOT_SERVER + "/login";
+                Dictionary<string, object> postData = new Dictionary<string, object>();
+                postData["username"] = username;
+                postData["password"] = pwssword;
+                
+                LogUtil.Log($"尝试登录到服务器: {loginUrl}");
+                JObject jo = HttpHelper.Instance.HttpPost<JObject>(loginUrl, postData.ToJson());
+                
+                if (jo == null)
+                {
+                    throw new Exception("服务器返回空响应，请检查网络连接或服务器状态");
+                }
+                
+                if ((int)jo["code"] == 200)
+                {
+                    HttpHelper.Instance.Headers.TryAdd("Authorization", (string)jo["token"]);
+                    LogUtil.Log("登录成功");
+                    Debug.WriteLine("登录成功");
+                }
+                else
+                {
+                    string errorMsg = (string)jo["msg"] ?? "未知登录错误";
+                    LogUtil.Log($"登录失败: {errorMsg}");
+                    throw new Exception(errorMsg);
+                }
             }
-            else
+            catch (InvalidOperationException ex) when (ex.Message.Contains("HTML内容"))
             {
-                throw new Exception((string)jo["msg"]);
+                LogUtil.Log("登录失败: 服务器返回HTML页面，可能服务器未正常运行");
+                throw new Exception("无法连接到服务器，请检查服务器是否正常运行或网络连接是否正常", ex);
+            }
+            catch (HttpRequestException ex)
+            {
+                LogUtil.Log($"登录网络请求失败: {ex.Message}");
+                throw new Exception("网络连接失败，请检查网络设置和服务器地址是否正确", ex);
+            }
+            catch (TimeoutException ex)
+            {
+                LogUtil.Log($"登录超时: {ex.Message}");
+                throw new Exception("连接服务器超时，请检查网络连接或稍后重试", ex);
+            }
+            catch (Exception ex)
+            {
+                LogUtil.Log($"登录过程发生未知错误: {ex.Message}");
+                throw;
             }
         }
 
@@ -67,24 +102,56 @@ namespace ImLibrary.IM
         }
 
         public static UserConfig GetUserConfig(string configKey) {
-            if(configMaps.TryGetValue(configKey, out UserConfig uc))
+            try
             {
-                return uc;
+                if(configMaps.TryGetValue(configKey, out UserConfig uc))
+                {
+                    return uc;
+                }
+                
+                string url = IMConstant.ROBOT_SERVER + "/game/config/key";
+                Dictionary<string, string> paramters = new Dictionary<string, string>();
+                paramters["configKey"] = configKey;
+                
+                LogUtil.Log($"获取用户配置: {configKey}");
+                ResponseData<UserConfig> response = HttpHelper.Instance.HttpGet<ResponseData<UserConfig>>(url, paramters);
+                
+                if (response == null)
+                {
+                    LogUtil.Log($"获取配置失败: 服务器返回空响应，配置键: {configKey}");
+                    return null;
+                }
+                
+                if (response.code==200)
+                {
+                    configMaps.TryAdd(configKey, response.data);
+                    LogUtil.Log($"成功获取配置: {configKey}");
+                    return response.data;
+                }
+                if(response.code == 403)
+                {
+                    LogUtil.Log($"获取配置权限不足: {configKey} - {response.msg}");
+                    throw new Exception(response.msg);
+                }
+                
+                LogUtil.Log($"获取配置失败: {configKey} - 代码: {response.code}, 消息: {response.msg}");
+                return null;
             }
-            string url = IMConstant.ROBOT_SERVER + "/game/config/key";
-            Dictionary<string, string> paramters = new Dictionary<string, string>();
-            paramters["configKey"] = configKey;
-            ResponseData<UserConfig> response = HttpHelper.Instance.HttpGet<ResponseData<UserConfig>>(url, paramters);
-            if (response.code==200)
+            catch (InvalidOperationException ex) when (ex.Message.Contains("HTML内容"))
             {
-                configMaps.TryAdd(configKey, response.data);
-                return response.data;
+                LogUtil.Log($"获取配置失败: 服务器返回HTML页面，配置键: {configKey}");
+                throw new Exception($"无法获取配置 '{configKey}'，服务器可能未正常运行", ex);
             }
-            if(response.code == 403)
+            catch (HttpRequestException ex)
             {
-                throw new Exception(response.msg);
+                LogUtil.Log($"获取配置网络请求失败: {configKey} - {ex.Message}");
+                throw new Exception($"获取配置 '{configKey}' 时网络连接失败", ex);
             }
-            return null;
+            catch (Exception ex)
+            {
+                LogUtil.Log($"获取配置时发生未知错误: {configKey} - {ex.Message}");
+                throw;
+            }
         }
 
         public static List<UserConfig> GetUserConfigsByPrefix(string configKeyPrefix)

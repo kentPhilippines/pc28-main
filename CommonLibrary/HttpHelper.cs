@@ -39,21 +39,52 @@ namespace CommonLibrary
         public string HttpPost(string url, string postData = null, string contentType = "application/json", int timeOut = 30)
         {
             postData = postData ?? "";
-            using (HttpClient client = new HttpClient())
+            try
             {
-                if (Headers.Count >0 )
+                using (HttpClient client = new HttpClient())
                 {
-                    foreach (var header in Headers)
-                        client.DefaultRequestHeaders.Add(header.Key, header.Value);
-                }
-                using (HttpContent httpContent = new StringContent(postData, Encoding.UTF8))
-                {
-                    if (contentType != null)
-                        httpContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
+                    client.Timeout = TimeSpan.FromSeconds(timeOut);
+                    
+                    if (Headers.Count >0 )
+                    {
+                        foreach (var header in Headers)
+                            client.DefaultRequestHeaders.Add(header.Key, header.Value);
+                    }
+                    using (HttpContent httpContent = new StringContent(postData, Encoding.UTF8))
+                    {
+                        if (contentType != null)
+                            httpContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
 
-                    HttpResponseMessage response = client.PostAsync(url, httpContent).Result;
-                    return response.Content.ReadAsStringAsync().Result;
+                        HttpResponseMessage response = client.PostAsync(url, httpContent).Result;
+                        string responseContent = response.Content.ReadAsStringAsync().Result;
+                        
+                        // 检查HTTP响应状态
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            LogUtil.Log($"HTTP POST请求失败: {url}");
+                            LogUtil.Log($"状态码: {response.StatusCode} ({(int)response.StatusCode})");
+                            LogUtil.Log($"响应内容: {responseContent}");
+                            throw new HttpRequestException($"HTTP请求失败，状态码: {response.StatusCode}，响应: {responseContent}");
+                        }
+                        
+                        return responseContent;
+                    }
                 }
+            }
+            catch (TaskCanceledException ex) when (ex.CancellationToken.IsCancellationRequested)
+            {
+                LogUtil.Log($"HTTP POST请求超时: {url}");
+                throw new TimeoutException($"HTTP请求超时 ({timeOut}秒): {url}", ex);
+            }
+            catch (HttpRequestException ex)
+            {
+                LogUtil.Log($"HTTP POST请求异常: {url} - {ex.Message}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                LogUtil.Log($"HTTP POST请求发生未知错误: {url} - {ex.Message}");
+                throw new HttpRequestException($"HTTP请求发生错误: {ex.Message}", ex);
             }
         }
 
@@ -95,28 +126,47 @@ namespace CommonLibrary
         /// <returns></returns>
         public string HttpGet(string url, Dictionary<string, string> parameters, string contentType = "application/json")
         {
-            using (HttpClient client = new HttpClient())
+            try
             {
-                if (contentType != null)
-                    client.DefaultRequestHeaders.Add("ContentType", contentType);
-                if (Headers.Count > 0)
+                using (HttpClient client = new HttpClient())
                 {
-                    foreach (var header in Headers)
-                        client.DefaultRequestHeaders.Add(header.Key, header.Value);
-                }                
-                try
-                {
+                    if (contentType != null)
+                        client.DefaultRequestHeaders.Add("ContentType", contentType);
+                    if (Headers.Count > 0)
+                    {
+                        foreach (var header in Headers)
+                            client.DefaultRequestHeaders.Add(header.Key, header.Value);
+                    }                
+                    
                     if (parameters?.Count > 0)
                     {
                         url += "?" + ToQueryString(parameters);
                     }
+                    
                     HttpResponseMessage response = client.GetAsync(url).Result;
-                    return response.Content.ReadAsStringAsync().Result;
+                    string responseContent = response.Content.ReadAsStringAsync().Result;
+                    
+                    // 检查HTTP响应状态
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        LogUtil.Log($"HTTP GET请求失败: {url}");
+                        LogUtil.Log($"状态码: {response.StatusCode} ({(int)response.StatusCode})");
+                        LogUtil.Log($"响应内容: {responseContent}");
+                        throw new HttpRequestException($"HTTP请求失败，状态码: {response.StatusCode}，响应: {responseContent}");
+                    }
+                    
+                    return responseContent;
                 }
-                catch (Exception)
-                {
-                    return "";
-                }
+            }
+            catch (HttpRequestException ex)
+            {
+                LogUtil.Log($"HTTP GET请求异常: {url} - {ex.Message}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                LogUtil.Log($"HTTP GET请求发生未知错误: {url} - {ex.Message}");
+                throw new HttpRequestException($"HTTP请求发生错误: {ex.Message}", ex);
             }
         }
 
