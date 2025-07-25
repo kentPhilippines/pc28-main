@@ -91,7 +91,23 @@ namespace RobotApp.Dao
                 record.Amount = sdr.GetInt32(5);
                 if (!sdr.IsDBNull(6))
                 {
-                    record.Odds = sdr.GetDouble(6);
+                    // 安全地获取Double值，如果转换失败则使用默认值
+                    try
+                    {
+                        record.Odds = sdr.GetDouble(6);
+                    }
+                    catch (InvalidCastException)
+                    {
+                        // 尝试转换为字符串再转换为Double
+                        if (double.TryParse(sdr.GetValue(6).ToString(), out double oddsValue))
+                        {
+                            record.Odds = oddsValue;
+                        }
+                        else
+                        {
+                            record.Odds = 0.0; // 默认值
+                        }
+                    }
                 }
                 if (!sdr.IsDBNull(7))
                 {

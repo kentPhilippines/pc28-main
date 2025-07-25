@@ -128,11 +128,43 @@ namespace RobotApp.Dao
                     user.LaShouCode = sdr.GetString(7);
                 }
                 if (!sdr.IsDBNull(8)) {
-                    user.RunningWaterScale = sdr.GetDouble(8);
+                    // 安全地获取Double值，如果转换失败则使用默认值
+                    try
+                    {
+                        user.RunningWaterScale = sdr.GetDouble(8);
+                    }
+                    catch (InvalidCastException)
+                    {
+                        // 尝试转换为字符串再转换为Double
+                        if (double.TryParse(sdr.GetValue(8).ToString(), out double runningWaterScale))
+                        {
+                            user.RunningWaterScale = runningWaterScale;
+                        }
+                        else
+                        {
+                            user.RunningWaterScale = 0.0; // 默认值
+                        }
+                    }
                 }
                 if (!sdr.IsDBNull(9))
                 {
-                    user.ReturnWaterScale = sdr.GetDouble(9);
+                    // 安全地获取Double值，如果转换失败则使用默认值
+                    try
+                    {
+                        user.ReturnWaterScale = sdr.GetDouble(9);
+                    }
+                    catch (InvalidCastException)
+                    {
+                        // 尝试转换为字符串再转换为Double
+                        if (double.TryParse(sdr.GetValue(9).ToString(), out double returnWaterScale))
+                        {
+                            user.ReturnWaterScale = returnWaterScale;
+                        }
+                        else
+                        {
+                            user.ReturnWaterScale = 0.0; // 默认值
+                        }
+                    }
                 }
                 userList.Add(user);
             }
