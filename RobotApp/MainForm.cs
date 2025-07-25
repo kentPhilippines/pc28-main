@@ -552,7 +552,12 @@ namespace RobotApp
 
                     //本次下注总分
                     double bczf = recordList.Sum(bet => bet.Amount);
-                    if (user.Jifen_Available < bczf)
+                    double availableForChange = user.Jifen_Available;
+                    if (msg.Msg.StartsWith("改"))
+                    {
+                        availableForChange += user.Blzf;
+                    }
+                    if (availableForChange < bczf)
                     {
                         //积分不足
                         if (Config.GetInstance().选择框_超额无效)
