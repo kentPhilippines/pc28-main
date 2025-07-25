@@ -1,4 +1,5 @@
-﻿using DocumentFormat.OpenXml.Spreadsheet;
+﻿using CommonLibrary;
+using DocumentFormat.OpenXml.Spreadsheet;
 using ImLibrary.Model;
 using Microsoft.VisualBasic.ApplicationServices;
 using RobotApp.Dao;
@@ -297,7 +298,9 @@ namespace RobotApp.Model
         /// <summary>
         /// 清空本期下注
         /// </summary>
-        public void ClearBetRecords(string remark= "")
+        /// <param name="remark">备注</param>
+        /// <param name="forceUnfreeze">是否强制解冻积分（用于改单等场景）</param>
+        public void ClearBetRecords(string remark = "", bool forceUnfreeze = false)
         {
             if(RecordList.Count == 0)
             {
@@ -307,7 +310,8 @@ namespace RobotApp.Model
             if (BetRecordDao.Delete(RecordList, remark))
             {
                 RecordList.Clear();
-                if (RobotClient.CurrentResult.Status < ResultStatus.已封盘)
+                // 如果还没封盘或者强制解冻（改单场景），则解冻积分
+                if (RobotClient.CurrentResult.Status < ResultStatus.已封盘 || forceUnfreeze)
                 {
                     UnfreezeJifen(sumAmount);
                 }
