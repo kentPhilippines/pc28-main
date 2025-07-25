@@ -473,7 +473,7 @@ namespace RobotApp
             }
             DataTable dt = BettingDao.CalcWater(begin, end, isDummy);
             dt.Columns.Add("组合占比", typeof(int));
-            dt.Columns.Add("计算退分", typeof(string));
+            dt.Columns.Add("计算退分", typeof(int));
             foreach (DataRow dr in dt.Rows)
             {
                 if ((int)dr["竞猜期数"] > 0)
@@ -739,11 +739,11 @@ namespace RobotApp
             }
 
 
-            dt.Columns.Add("已退分", typeof(string));
+            dt.Columns.Add("已退分", typeof(int));
             dt.Columns.Add("自助流水", typeof(int));
-            dt.Columns.Add("剩余流水", typeof(string));
+            dt.Columns.Add("剩余流水", typeof(int));
             dt.Columns.Add("自助回水", typeof(int));
-            dt.Columns.Add("剩余回水", typeof(string));
+            dt.Columns.Add("剩余回水", typeof(int));
 
 
             DataTable dtBettings = BettingDao.GetBettings(begin, end, isDummy);

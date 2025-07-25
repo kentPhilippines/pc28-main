@@ -1,4 +1,5 @@
-﻿using RobotApp.IM;
+﻿using CommonLibrary;
+using RobotApp.IM;
 using RobotApp.Model;
 using RobotApp.Util;
 using System;
@@ -71,8 +72,12 @@ namespace RobotApp.Dao
             List<BetRecord> recordList = new List<BetRecord>();
             if (result == null)
             {
+                LogUtil.Log($"BetRecordDao.GetByUserAndResult: result为null，用户{user.UserId}无法加载注单");
                 return recordList;
             }
+            
+            LogUtil.Log($"BetRecordDao.GetByUserAndResult: 查询用户{user.UserId}在期次{result.Issue}(ID:{result.Id})的注单数据");
+            
             string sql = @"select id, result_id, user_code, bet_type, keyword, amount, odds, award, fp, status, remark, is_water
                                   from t_bet_record where is_deleted=0 and user_code=@userCode and result_id=@resultId";
             SQLiteDataReader sdr = DBHelperSQLite.ExecuteReader(sql, new SQLiteParameter[] {
@@ -139,6 +144,8 @@ namespace RobotApp.Dao
                 recordList.Add(record);
             }
             sdr.Close();
+            
+            LogUtil.Log($"BetRecordDao.GetByUserAndResult: 用户{user.UserId}在期次{result.Issue}查询到{recordList.Count}条注单数据");
             return recordList;
         }
     }

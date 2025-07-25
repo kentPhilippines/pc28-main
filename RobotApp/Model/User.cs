@@ -205,7 +205,26 @@ namespace RobotApp.Model
             this._isDummy = isDummy;
             this.Slyk = slyk;
             this.UserId = userId;
-            this.RecordList = BetRecordDao.GetByUserAndResult(this, RobotClient.CurrentResult);
+            
+            // 修复注单加载：添加详细日志和异常处理
+            try
+            {
+                if (RobotClient.CurrentResult != null)
+                {
+                    this.RecordList = BetRecordDao.GetByUserAndResult(this, RobotClient.CurrentResult);
+                    LogUtil.Log($"用户 {nickName}({userId}) 加载注单数据：期次{RobotClient.CurrentResult.Issue}, 注单数量{RecordList.Count}");
+                }
+                else
+                {
+                    this.RecordList = new List<BetRecord>();
+                    LogUtil.Log($"警告：用户 {nickName}({userId}) 无法加载注单数据，CurrentResult为null");
+                }
+            }
+            catch (Exception ex)
+            {
+                this.RecordList = new List<BetRecord>();
+                LogUtil.Log($"错误：用户 {nickName}({userId}) 加载注单数据失败：{ex.Message}");
+            }
         }
 
         public User(string userId, string nickName, bool isDummy = false)

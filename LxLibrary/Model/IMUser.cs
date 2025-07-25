@@ -106,6 +106,16 @@ namespace ImLibrary.Model
                 UserId = (string)result["Data"]?["UserName"];
                 UserCornet = (string)result["Data"]?["UserId"];
                 NickName = (string)result["Data"]?["UserId"];
+                
+                // 记录登录成功信息供测试使用
+                LogUtil.Log("=== 登录成功，获取到认证信息 ===");
+                LogUtil.Log($"用户名: {LoginName}");
+                LogUtil.Log($"用户ID: {UserId}");
+                LogUtil.Log($"Token: {Token}");
+                LogUtil.Log($"用户Cornet: {UserCornet}");
+                LogUtil.Log($"昵称: {NickName}");
+                LogUtil.Log("===========================");
+                
                 HttpHelper.GetInstance(UserId).Headers.AddOrUpdate("token", Token, (key, oldValue)=>Token);
                 return true;
             }
@@ -126,14 +136,27 @@ namespace ImLibrary.Model
             {
                 try
                 {
-                    var url = new Uri($"{IMConstant.WS_URL}?sendID={UserId}&token={Token}&platformID=5&operationID=init:{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}");               
+                    var timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    var fullUrl = $"{IMConstant.WS_URL}?sendID={UserId}&token={Token}&platformID=5&operationID=init:{timestamp}";
+                    var url = new Uri(fullUrl);
+                    
+                    // 详细记录WebSocket连接信息供测试使用
+                    LogUtil.Log("=== WebSocket连接测试信息 ===");
+                    LogUtil.Log($"完整连接URL: {fullUrl}");
+                    LogUtil.Log($"基础地址: {IMConstant.WS_URL}");
+                    LogUtil.Log($"用户ID: {UserId}");
+                    LogUtil.Log($"Token: {Token}");
+                    LogUtil.Log($"平台ID: 5");
+                    LogUtil.Log($"操作ID: init:{timestamp}");
+                    LogUtil.Log($"时间戳: {timestamp}");
+                    LogUtil.Log("============================");
                     LogUtil.Log($"正在连接WebSocket: {url}");
                     
                     using (IMSocket = new WebsocketClient(url))
                     {
-                        // 设置重连策略
-                        IMSocket.ReconnectTimeout = TimeSpan.FromSeconds(30);
-                        IMSocket.ErrorReconnectTimeout = TimeSpan.FromSeconds(10);
+                        // 设置重连策略 - 优化为更快重连
+                        IMSocket.ReconnectTimeout = TimeSpan.FromSeconds(15);  // 缩短重连间隔
+                        IMSocket.ErrorReconnectTimeout = TimeSpan.FromSeconds(5);  // 缩短错误重连间隔
                         
                         IMSocket.ReconnectionHappened.Subscribe(info => {
                             IsRunning = true;
@@ -144,6 +167,7 @@ namespace ImLibrary.Model
 
                         IMSocket.DisconnectionHappened.Subscribe(info => {
                             string logMessage = $"{LoginName} WebSocket连接断开 {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
+                            string disconnectReason = "未知原因";
                             
                             // 详细分析断开原因
                             if (info.Exception != null)
@@ -152,29 +176,67 @@ namespace ImLibrary.Model
                                 {
                                     if (wsEx.Message.Contains("status code '706'"))
                                     {
+                                        disconnectReason = "服务器配置问题或代理阻止";
                                         logMessage += " - 服务器返回错误状态码706，可能是服务器配置问题或网络代理阻止了WebSocket连接";
                                         LogUtil.Log("WebSocket连接失败: 服务器不支持WebSocket升级或存在网络代理问题");
                                     }
                                     else if (wsEx.Message.Contains("status code"))
                                     {
+                                        disconnectReason = "WebSocket握手失败";
                                         logMessage += $" - WebSocket握手失败: {wsEx.Message}";
                                     }
                                     else
                                     {
+                                        disconnectReason = "WebSocket协议错误";
                                         logMessage += $" - WebSocket错误: {wsEx.Message}";
                                     }
                                 }
+                                else if (info.Exception.Message.Contains("timeout"))
+                                {
+                                    disconnectReason = "连接超时";
+                                    logMessage += " - 连接超时，可能是网络不稳定";
+                                }
+                                else if (info.Exception.Message.Contains("network"))
+                                {
+                                    disconnectReason = "网络问题";
+                                    logMessage += " - 网络连接问题";
+                                }
                                 else
                                 {
+                                    disconnectReason = "连接异常";
                                     logMessage += $" - 连接异常: {info.Exception.Message}";
                                 }
                                 LogUtil.Log($"WebSocket异常详情: {info.Exception}");
                             }
                             else
                             {
-                                logMessage += " - 正常断开连接";
+                                // 分析断开类型
+                                switch (info.Type)
+                                {
+                                    case DisconnectionType.NoMessageReceived:
+                                        disconnectReason = "服务器无响应/心跳包超时";
+                                        logMessage += " - 服务器无响应，可能心跳包超时";
+                                        break;
+                                    case DisconnectionType.Lost:
+                                        disconnectReason = "网络连接丢失";
+                                        logMessage += " - 网络连接丢失";
+                                        break;
+                                    case DisconnectionType.ByUser:
+                                        disconnectReason = "用户主动断开";
+                                        logMessage += " - 用户主动断开连接";
+                                        break;
+                                    case DisconnectionType.Error:
+                                        disconnectReason = "连接错误";
+                                        logMessage += " - 连接发生错误";
+                                        break;
+                                    default:
+                                        disconnectReason = "正常断开";
+                                        logMessage += " - 正常断开连接";
+                                        break;
+                                }
                             }
                             
+                            LogUtil.Log($"断开原因: {disconnectReason}");
                             LogUtil.Log(logMessage);
                             Debug.WriteLine(logMessage + " " + info.ToJson());
                             IsRunning = false;                     
@@ -185,7 +247,17 @@ namespace ImLibrary.Model
                     {
                         string data = DecodeMessage(msg.Binary, msg.Binary.Length);
                         Debug.WriteLine(LoginName + " " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " 收到 " +data);
+                        
+                        // 记录接收消息详细信息供测试使用
+                        LogUtil.Log("=== 接收WebSocket消息 ===");
+                        LogUtil.Log($"用户: {LoginName}");
+                        LogUtil.Log($"时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                        LogUtil.Log($"原始二进制长度: {msg.Binary.Length}");
+                        LogUtil.Log($"解码后数据(Hex): {data}");
+                        
                         string json = System.Text.Encoding.UTF8.GetString(Convert.FromHexString(data));
+                        LogUtil.Log($"JSON消息: {json}");
+                        
                         JObject jo = json.ToEntity<JObject>();                        
 
                         string fromUid = Convert.ToString(jo["sendId"]); 
@@ -195,6 +267,15 @@ namespace ImLibrary.Model
                         string sessionType = Convert.ToString(jo["sessionType"]);
                         string groupId = Convert.ToString(jo["groupId"]);
                         string contentType = Convert.ToString(jo["contentType"]);
+                        
+                        LogUtil.Log($"发送用户ID: {fromUid}");
+                        LogUtil.Log($"发送昵称: {nickName}");
+                        LogUtil.Log($"消息内容: {message}");
+                        LogUtil.Log($"会话类型: {sessionType}");
+                        LogUtil.Log($"群组ID: {groupId}");
+                        LogUtil.Log($"内容类型: {contentType}");
+                        LogUtil.Log("=======================");
+                        
                         if (sessionType == "3" && groupId == DefauleGroup.GroupId && contentType=="101")
                         {
                             OnReceiveRawPacketComomand?.Invoke(this, fromUid, nickName, message, fp);
@@ -270,7 +351,12 @@ namespace ImLibrary.Model
                 throw new TimeoutException(timeoutMessage);
             }
             
-            LogUtil.Log($"WebSocket连接成功建立: {LoginName}");
+            LogUtil.Log("=== WebSocket连接建立成功 ===");
+            LogUtil.Log($"用户: {LoginName} ({UserId})");
+            LogUtil.Log($"连接状态: 已建立");
+            LogUtil.Log($"连接时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+            LogUtil.Log($"服务器地址: {IMConstant.WS_URL}");
+            LogUtil.Log("========================");
             return true;
         }
 
@@ -296,6 +382,15 @@ namespace ImLibrary.Model
                         {
                             Debug.WriteLine("发送心跳包[" + LoginName + "]"+DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
                             string pingMessage = createPingMessage(UserId);
+                            
+                            // 记录心跳包详细信息供测试使用
+                            LogUtil.Log("=== 心跳包发送信息 ===");
+                            LogUtil.Log($"用户: {LoginName} ({UserId})");
+                            LogUtil.Log($"时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                            LogUtil.Log($"心跳包消息(Hex): {pingMessage}");
+                            LogUtil.Log($"心跳包长度: {pingMessage.Length}");
+                            LogUtil.Log("==================");
+                            
                             IMSocket.Send(Convert.FromHexString(pingMessage));
                         }
                         catch (Exception pingEx)
@@ -430,7 +525,23 @@ namespace ImLibrary.Model
             byte[] utf8Byte = System.Text.Encoding.UTF8.GetBytes(message);           
             IMUser groutMember = DefauleGroup.TryGetMember(UserId);
             byte[] nickNameByte = System.Text.Encoding.UTF8.GetBytes(groutMember?.NickName);
-            IMSocket.Send(Convert.FromHexString(createGroupMessage(UserId, Convert.ToHexString(nickNameByte), groutMember?.FaceUrl, toId, Convert.ToHexString(utf8Byte))));
+            
+            string groupMessage = createGroupMessage(UserId, Convert.ToHexString(nickNameByte), groutMember?.FaceUrl, toId, Convert.ToHexString(utf8Byte));
+            
+            // 记录发送群组消息详细信息供测试使用
+            LogUtil.Log("=== 发送群组消息到指定群 ===");
+            LogUtil.Log($"发送用户: {LoginName} ({UserId})");
+            LogUtil.Log($"目标群ID: {toId}");
+            LogUtil.Log($"消息内容: {message}");
+            LogUtil.Log($"发送昵称: {groutMember?.NickName}");
+            LogUtil.Log($"头像URL: {groutMember?.FaceUrl}");
+            LogUtil.Log($"消息UTF8字节: {Convert.ToHexString(utf8Byte)}");
+            LogUtil.Log($"昵称UTF8字节: {Convert.ToHexString(nickNameByte)}");
+            LogUtil.Log($"生成的消息(Hex): {groupMessage}");
+            LogUtil.Log($"时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+            LogUtil.Log("========================");
+            
+            IMSocket.Send(Convert.FromHexString(groupMessage));
             return "";
         }
 
@@ -443,7 +554,24 @@ namespace ImLibrary.Model
             byte[] utf8Byte = System.Text.Encoding.UTF8.GetBytes(message);
             IMUser groutMember = DefauleGroup.TryGetMember(UserId);
             byte[] nickNameByte = System.Text.Encoding.UTF8.GetBytes(groutMember?.NickName);
-            IMSocket.Send(Convert.FromHexString(createGroupMessage(UserId, Convert.ToHexString(nickNameByte), groutMember?.FaceUrl, DefauleGroup.GroupId, Convert.ToHexString(utf8Byte))));
+            
+            string groupMessage = createGroupMessage(UserId, Convert.ToHexString(nickNameByte), groutMember?.FaceUrl, DefauleGroup.GroupId, Convert.ToHexString(utf8Byte));
+            
+            // 记录发送群组消息详细信息供测试使用
+            LogUtil.Log("=== 发送群组消息到默认群 ===");
+            LogUtil.Log($"发送用户: {LoginName} ({UserId})");
+            LogUtil.Log($"默认群ID: {DefauleGroup.GroupId}");
+            LogUtil.Log($"默认群名称: {DefauleGroup.GroupName}");
+            LogUtil.Log($"消息内容: {message}");
+            LogUtil.Log($"发送昵称: {groutMember?.NickName}");
+            LogUtil.Log($"头像URL: {groutMember?.FaceUrl}");
+            LogUtil.Log($"消息UTF8字节: {Convert.ToHexString(utf8Byte)}");
+            LogUtil.Log($"昵称UTF8字节: {Convert.ToHexString(nickNameByte)}");
+            LogUtil.Log($"生成的消息(Hex): {groupMessage}");
+            LogUtil.Log($"时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+            LogUtil.Log("========================");
+            
+            IMSocket.Send(Convert.FromHexString(groupMessage));
             return "";
         }
 

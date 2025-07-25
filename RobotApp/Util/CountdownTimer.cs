@@ -74,5 +74,21 @@ namespace RobotApp.Util
             _timer.Dispose();
             OnStop?.Invoke();
         }
+
+        /// <summary>
+        /// 重置倒计时器到新的时间，清除所有TimerActions，用于无缝过渡到下一期
+        /// </summary>
+        /// <param name="newSeconds">新的倒计时秒数</param>
+        public void Reset(int newSeconds)
+        {
+            Debug.WriteLine($"倒计时重置: {_remainingTime} -> {newSeconds}");
+            _remainingTime = newSeconds;
+            TimerActions.Clear();
+        }
+
+        /// <summary>
+        /// 获取当前剩余时间
+        /// </summary>
+        public int RemainingTime => _remainingTime;
     }
 }

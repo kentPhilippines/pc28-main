@@ -95,7 +95,17 @@ namespace RobotApp
 
         private void Robot_ReconnectionHappened(IMUser user, Websocket.Client.ReconnectionInfo info)
         {
-            //tssl动态提示.Text = "重新连接成功";
+            this.Invoke(() =>
+            {
+                tssl动态提示.Text = "重新连接成功";
+                LogUtil.Log($"WebSocket重连成功，游戏继续运行，重连类型: {info.Type}");
+                
+                // 确保游戏状态UI正确显示
+                if (RobotClient.ROBOT_RUNNING)
+                {
+                    UpdateGameStatusUI();
+                }
+            });
         }
 
         private void UserBindingSource_ListChanged(object sender, System.ComponentModel.ListChangedEventArgs e)
@@ -116,14 +126,19 @@ namespace RobotApp
         private void Robot_OnDisconnect(IMUser obj, DisconnectionInfo info)
         {
             LogUtil.Log("连接断开："+info.ToJson());
-            countdown?.StopAndDispose();
-            tssl动态提示.Text = "连接已断开";
-            Debug.WriteLine("连接断开");
+            
+            // 不停止倒计时器和游戏，保持游戏连续运行
+            // countdown?.StopAndDispose();  // 注释掉，保持倒计时器运行
+            
+            tssl动态提示.Text = "连接已断开，尝试重连中...";
+            Debug.WriteLine("连接断开，游戏保持运行状态");
+            
+            // 只播放提示音，不停止游戏
             if (RobotClient.ROBOT_RUNNING)
             {
-                停止游戏();
                 SoundUtil.Play("断网");
-                //MessageBox.Show("机器人掉线了，请忽在其它地方登录机器人帐号，或检查下网络是否异常。");
+                LogUtil.Log("网络断开，游戏保持运行状态，等待重连");
+                // 停止游戏();  // 注释掉，不停止游戏
             }
         }
 
@@ -766,69 +781,20 @@ namespace RobotApp
                     });
                 }
 
-                //结束游戏，等待开奖
+                //开奖处理将由TransitionToNextPeriod方法统一处理，避免重复逻辑
                 countdown.AddTimerAction(0, () =>
                 {
+                    // 只设置UI状态，具体开奖处理由TransitionToNextPeriod统一处理
                     this.Invoke(() =>
                     {
-                        countdown.Tick = null;
                         lbl距离开奖.Text = "距离开奖:开奖中";
                         RobotClient.CurrentResult.Status = ResultStatus.等待开奖;
                         ResultDao.Save(RobotClient.CurrentResult);
                         RobotClient.SendConfigMessage(Config.GetInstance().编辑框_消息_开奖前);
                     });
 
-                    //启动一线程获取最新开奖结果
-                    Task.Run(() =>
-                    {
-                        Result result = null;
-                        do
-                        {
-                            try
-                            {
-                                result = RobotClient.GetLatestResult(RobotClient.CurrentLotterCode);
-                            }
-                            catch (Exception)
-                            {
-                                MessageBox.Show($"{RobotClient.CurrentResult.Issue}期开奖结果获取异常，请处理！");
-                                return;
-                            }
-                        }
-                        while (result == null || result.Issue < RobotClient.CurrentResult.Issue);
-
-
-                        if (result.Issue == RobotClient.CurrentResult.Issue)
-                        {
-                            countdown?.StopAndDispose();
-                            result = RobotClient.CurrentResult.SetResult(result);
-                            ResultDao.Save(result);
-
-                            this.Invoke(() =>
-                            {
-                                RobotClient.ResultList.Add(result);
-                                BettingUtil.ProcessSettlement(result, RobotClient.UserList.ToList());
-                                if (选择框_实时排序.Checked)
-                                {
-                                    SortDataGridView(ListSortDirection.Descending);
-                                }
-                            });
-
-                            RobotClient.SendConfigMessage(Config.GetInstance().编辑框_消息_开奖);
-                            if (Config.GetInstance().编辑框_延迟发送账单秒 > 0)
-                            {
-                                Thread.Sleep(1000 * Config.GetInstance().编辑框_延迟发送账单秒);
-                            }
-                            RobotClient.SendConfigMessage(Config.GetInstance().编辑框_消息_账单);
-
-                            this.Invoke(() =>
-                            {
-                                RobotClient.StartGame((result) =>
-                                {
-                                    MakeCountdownTimer(RobotClient.CurrentResult);
-                                }, result);
-                            });
-                        }
-                    });
+                    // 触发开奖处理 - 统一由ProcessLotteryDrawing方法处理
+                    ProcessLotteryDrawing();
                 });
 
                 //卡奖警报
@@ -858,104 +824,440 @@ namespace RobotApp
 
                 countdown.OnStart += () =>
                 {
-                    this.Invoke(() =>
-                    {
-                        lbl当前竞猜.Text = "当前竞猜:第" + RobotClient.CurrentResult.Issue + "期";
-                        if (RobotClient.PrevResult != null)
-                        {
-                            Result preResult = RobotClient.PrevResult;
-                            if (preResult == null || (preResult.Status > ResultStatus.无开盘 && preResult.Status < ResultStatus.已开奖))
-                            {
-                                lbl上轮开奖.Text = "上轮开奖:?+?+?=?";
-                                lbl上轮输赢.Text = "输赢:?";
-                            }
-                            else
-                            {
-                                lbl上轮开奖.Text = "上轮开奖:" + preResult.ThreeNum + "=" + preResult.Sum;
-                                double? sy = preResult.WinOrLose;
-                                lbl上轮输赢.Text = "输赢:" + (sy == 0 ? 0 : -sy);
-                            }
-                        }
-                        if (选择框_今日总输赢.Checked)
-                        {
-                            选择框_今日总输赢.Text = "今日总输赢:" + BettingDao.GetTodayWinOrLose().ToString();
-                        }
-                    });
+                    UpdateGameStatusUI();
                 };
 
                 countdown.OnStop += () =>
                 {
+                    ResetGameStatusUI();
                     this.Invoke(() =>
                     {
-                        lbl当前竞猜.Text = "当前竞猜:第?期";
                         lbl距离开奖.Text = "距离开奖:???";
-                        lbl上轮开奖.Text = "上轮开奖:?+?+?=?";
-                        lbl上轮输赢.Text = "输赢:?";
                     });
                 };
 
-                #region 广告发送
-                if (Config.GetInstance().编辑框_周期_广告1 > 0)
-                {
-                    if (Config.GetInstance().编辑框_消息_广告1 != "")
-                    {
-                        if (RobotClient.CurrentResult.Issue % Config.GetInstance().编辑框_周期_广告1 == 0)
-                        {
-                            int sec = Config.GetInstance().编辑框_倒计时_封盘提醒 - Config.GetInstance().编辑框_时间_广告1;
-                            countdown.AddTimerAction(sec, () =>
-                            {
-                                RobotClient.SendMessage(Config.GetInstance().编辑框_消息_广告1);
-                            });
-                        }
-                    }
-                }
-                if (Config.GetInstance().编辑框_周期_广告2 > 0)
-                {
-                    if (Config.GetInstance().编辑框_消息_广告2 != "")
-                    {
-                        if (RobotClient.CurrentResult.Issue % Config.GetInstance().编辑框_周期_广告2 == 0)
-                        {
-                            int sec = Config.GetInstance().编辑框_倒计时_封盘提醒 - Config.GetInstance().编辑框_时间_广告2;
-                            countdown.AddTimerAction(sec, () =>
-                            {
-                                RobotClient.SendMessage(Config.GetInstance().编辑框_消息_广告2);
-                            });
-                        }
-                    }
-                }
-                if (Config.GetInstance().编辑框_周期_广告3 > 0)
-                {
-                    if (Config.GetInstance().编辑框_消息_广告3 != "")
-                    {
-                        if (RobotClient.CurrentResult.Issue % Config.GetInstance().编辑框_周期_广告3 == 0)
-                        {
-                            int sec = Config.GetInstance().编辑框_倒计时_封盘提醒 - Config.GetInstance().编辑框_时间_广告3;
-                            countdown.AddTimerAction(sec, () =>
-                            {
-                                RobotClient.SendMessage(Config.GetInstance().编辑框_消息_广告3);
-                            });
-                        }
-                    }
-                }
-                if (Config.GetInstance().编辑框_周期_广告4 > 0)
-                {
-                    if (Config.GetInstance().编辑框_消息_广告4 != "")
-                    {
-                        if (RobotClient.CurrentResult.Issue % Config.GetInstance().编辑框_周期_广告4 == 0)
-                        {
-                            int sec = Config.GetInstance().编辑框_倒计时_封盘提醒 - Config.GetInstance().编辑框_时间_广告4;
-                            countdown.AddTimerAction(sec, () =>
-                            {
-                                RobotClient.SendMessage(Config.GetInstance().编辑框_消息_广告4);
-                            });
-                        }
-                    }
-                }
-                #endregion
+                // 设置广告发送定时器
+                SetupAdvertisementTimers(countdown);
 
                 //启动倒计时
                 countdown.Start();
             }
+        }
+
+        // 开奖处理锁，防止重复处理
+        private static readonly object lotteryDrawingLock = new object();
+        private static bool isProcessingLottery = false;
+
+        /// <summary>
+        /// 统一的开奖处理方法，避免重复逻辑
+        /// </summary>
+        private void ProcessLotteryDrawing()
+        {
+            // 防止重复处理开奖
+            lock (lotteryDrawingLock)
+            {
+                if (isProcessingLottery)
+                {
+                    LogUtil.Log("开奖处理正在进行中，跳过重复请求");
+                    return;
+                }
+                isProcessingLottery = true;
+            }
+            //启动一线程获取最新开奖结果
+            Task.Run(() =>
+            {
+                Result result = null;
+                string currentIssue = RobotClient.CurrentResult.Issue.ToString();
+                
+                do
+                {
+                    try
+                    {
+                        result = RobotClient.GetLatestResult(RobotClient.CurrentLotterCode);
+                        LogUtil.Log($"获取开奖结果: 期号{result?.Issue}, 当前期号{RobotClient.CurrentResult.Issue}");
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtil.Log($"获取开奖结果异常: {ex.Message}");
+                        MessageBox.Show($"{currentIssue}期开奖结果获取异常，请处理！");
+                        
+                        // 释放开奖处理锁
+                        lock (lotteryDrawingLock)
+                        {
+                            isProcessingLottery = false;
+                        }
+                        return;
+                    }
+                }
+                while (result == null || result.Issue < RobotClient.CurrentResult.Issue);
+
+                if (result.Issue == RobotClient.CurrentResult.Issue)
+                {
+                    LogUtil.Log($"开始处理{currentIssue}期开奖结果");
+                    
+                    // 处理开奖结果，继续保持倒计时器运行
+                    result = RobotClient.CurrentResult.SetResult(result);
+                    ResultDao.Save(result);
+
+                    this.Invoke(() =>
+                    {
+                        RobotClient.ResultList.Add(result);
+                        BettingUtil.ProcessSettlement(result, RobotClient.UserList.ToList());
+                        if (选择框_实时排序.Checked)
+                        {
+                            SortDataGridView(ListSortDirection.Descending);
+                        }
+                    });
+
+                    RobotClient.SendConfigMessage(Config.GetInstance().编辑框_消息_开奖);
+                    if (Config.GetInstance().编辑框_延迟发送账单秒 > 0)
+                    {
+                        Thread.Sleep(1000 * Config.GetInstance().编辑框_延迟发送账单秒);
+                    }
+                    RobotClient.SendConfigMessage(Config.GetInstance().编辑框_消息_账单);
+
+                    LogUtil.Log($"{currentIssue}期开奖处理完成，开始下一期");
+
+                    // 开始下一期，无缝连接倒计时
+                    this.Invoke(() =>
+                    {
+                        RobotClient.StartGame((nextResult) =>
+                        {
+                            // 计算下一期的倒计时，并平滑过渡
+                            TransitionToNextPeriod(nextResult);
+                        }, result);
+                    });
+
+                    // 释放开奖处理锁
+                    lock (lotteryDrawingLock)
+                    {
+                        isProcessingLottery = false;
+                    }
+                }
+                else
+                {
+                    LogUtil.Log($"期号不匹配: 获取到{result.Issue}期，期望{RobotClient.CurrentResult.Issue}期");
+                    
+                    // 释放开奖处理锁
+                    lock (lotteryDrawingLock)
+                    {
+                        isProcessingLottery = false;
+                    }
+                }
+            });
+        }
+
+        /// <summary>
+        /// 平滑过渡到下一期，无需停止当前倒计时器
+        /// </summary>
+        /// <param name="nextResult">下一期结果</param>
+        private void TransitionToNextPeriod(Result nextResult)
+        {
+            if (nextResult == null || countdown == null)
+            {
+                return;
+            }
+
+            Debug.WriteLine("平滑过渡到下一期：{0}  状态：{1}", nextResult.Issue, nextResult.Status);
+            
+            // 计算下一期的倒计时时间
+            TimeSpan kjdjs = nextResult.OpenTime - DateTime.Now;
+            int second = (int)kjdjs.TotalSeconds;
+            
+            if (kjdjs > TimeSpan.Zero)
+            {
+                // 重置倒计时器到新的时间，清除旧的TimerActions
+                countdown.Reset(second);
+
+                // 重新设置Tick事件（保持连续的时间显示）
+                countdown.Tick = (seconds) =>
+                {
+                    this.Invoke(() =>
+                    {
+                        lbl距离开奖.Text = "距离开奖:" + TimeSpan.FromSeconds(seconds).ToString("mm\\:ss");
+                    });
+                };
+
+                // 重新设置封盘前提醒                
+                int fpq = Config.GetInstance().编辑框_倒计时_封盘前提醒 + Config.GetInstance().编辑框_倒计时_封盘提醒;
+                countdown.AddTimerAction(fpq, () =>
+                {
+                    RobotClient.SendConfigMessage(Config.GetInstance().编辑框_消息_封盘前);
+                });
+
+                // 重新设置封盘提醒             
+                countdown.AddTimerAction(Config.GetInstance().编辑框_倒计时_封盘提醒, () =>
+                {
+                    this.Invoke(() =>
+                    {
+                        BettingUtil.ProcessClosing();
+                        RobotClient.CurrentResult.Status = ResultStatus.已封盘;
+                        ResultDao.Save(RobotClient.CurrentResult);
+                        RobotClient.SendConfigMessage(Config.GetInstance().编辑框_消息_封盘);
+                        if (RobotClient.ROBOT_RUNNING)
+                        {
+                            SoundUtil.Play("封盘");
+                        }
+                    });
+                });
+
+                // 处理已经过期的状态
+                if(second < Config.GetInstance().编辑框_倒计时_封盘提醒)
+                {
+                    RobotClient.CurrentResult.Status = ResultStatus.已封盘;
+                    ResultDao.Save(RobotClient.CurrentResult);
+                }
+                if (second < 0)
+                {
+                    RobotClient.CurrentResult.Status = ResultStatus.等待开奖;
+                    ResultDao.Save(RobotClient.CurrentResult);
+                }
+
+                // 重新设置封盘后核对
+                if (Config.GetInstance().选择框_核对提醒)
+                {
+                    int hd = Config.GetInstance().编辑框_倒计时_封盘提醒 - Config.GetInstance().编辑框_倒计时_核对提醒;
+                    countdown.AddTimerAction(hd, () =>
+                    {
+                        RobotClient.SendConfigMessage(Config.GetInstance().编辑框_消息_封盘后);
+                    });
+                }
+
+                // 重新设置开奖处理 - 使用统一的开奖处理方法
+                countdown.AddTimerAction(0, () =>
+                {
+                    this.Invoke(() =>
+                    {
+                        lbl距离开奖.Text = "距离开奖:开奖中";
+                        RobotClient.CurrentResult.Status = ResultStatus.等待开奖;
+                        ResultDao.Save(RobotClient.CurrentResult);
+                        RobotClient.SendConfigMessage(Config.GetInstance().编辑框_消息_开奖前);
+                    });
+
+                    // 调用统一的开奖处理方法，避免重复逻辑
+                    ProcessLotteryDrawing();
+                });
+
+                // 重新设置卡奖警报
+                if (Config.GetInstance().选择框_卡奖警报)
+                {
+                    int kjms = Config.GetInstance().编辑框_卡奖警报秒数;
+                    if(RobotClient.CurrentLotterCode == LotterCode.宾果)
+                    {
+                        kjms = Config.GetInstance().编辑框_卡奖警报秒数_宾果;
+                    }
+                    countdown.AddTimerAction(-kjms, () =>
+                    {
+                        if (RobotClient.ROBOT_RUNNING)
+                        {
+                            Task.Run(async () =>
+                            {
+                                await StartKajianSound();
+                            });
+                            this.Invoke(() =>
+                            {
+                                MessageBox.Show(this, "卡奖了，请处理！");
+                                StopKajianSound();
+                            });                         
+                        }
+                    });
+                }
+
+                // 更新UI显示
+                UpdateGameStatusUI();
+
+                // 重新设置广告发送定时器
+                SetupAdvertisementTimers(countdown);
+            }
+        }
+
+        /// <summary>
+        /// 设置广告发送定时器
+        /// </summary>
+        /// <param name="countdown">倒计时器对象</param>
+        private void SetupAdvertisementTimers(CountdownTimer countdown)
+        {
+            if (countdown == null || RobotClient.CurrentResult == null)
+            {
+                return;
+            }
+
+            LogUtil.Log("=== 设置广告发送定时器 ===");
+            LogUtil.Log($"当前期号: {RobotClient.CurrentResult.Issue}");
+
+            // 广告1
+            if (Config.GetInstance().编辑框_周期_广告1 > 0)
+            {
+                if (!string.IsNullOrEmpty(Config.GetInstance().编辑框_消息_广告1))
+                {
+                    if (RobotClient.CurrentResult.Issue % Config.GetInstance().编辑框_周期_广告1 == 0)
+                    {
+                        int sec = Config.GetInstance().编辑框_倒计时_封盘提醒 - Config.GetInstance().编辑框_时间_广告1;
+                        countdown.AddTimerAction(sec, () =>
+                        {
+                            RobotClient.SendMessage(Config.GetInstance().编辑框_消息_广告1);
+                        });
+                        LogUtil.Log($"广告1已设置: 周期{Config.GetInstance().编辑框_周期_广告1}, 触发时间{sec}秒, 内容: {Config.GetInstance().编辑框_消息_广告1}");
+                    }
+                }
+            }
+
+            // 广告2
+            if (Config.GetInstance().编辑框_周期_广告2 > 0)
+            {
+                if (!string.IsNullOrEmpty(Config.GetInstance().编辑框_消息_广告2))
+                {
+                    if (RobotClient.CurrentResult.Issue % Config.GetInstance().编辑框_周期_广告2 == 0)
+                    {
+                        int sec = Config.GetInstance().编辑框_倒计时_封盘提醒 - Config.GetInstance().编辑框_时间_广告2;
+                        countdown.AddTimerAction(sec, () =>
+                        {
+                            RobotClient.SendMessage(Config.GetInstance().编辑框_消息_广告2);
+                        });
+                        LogUtil.Log($"广告2已设置: 周期{Config.GetInstance().编辑框_周期_广告2}, 触发时间{sec}秒, 内容: {Config.GetInstance().编辑框_消息_广告2}");
+                    }
+                }
+            }
+
+            // 广告3
+            if (Config.GetInstance().编辑框_周期_广告3 > 0)
+            {
+                if (!string.IsNullOrEmpty(Config.GetInstance().编辑框_消息_广告3))
+                {
+                    if (RobotClient.CurrentResult.Issue % Config.GetInstance().编辑框_周期_广告3 == 0)
+                    {
+                        int sec = Config.GetInstance().编辑框_倒计时_封盘提醒 - Config.GetInstance().编辑框_时间_广告3;
+                        countdown.AddTimerAction(sec, () =>
+                        {
+                            RobotClient.SendMessage(Config.GetInstance().编辑框_消息_广告3);
+                        });
+                        LogUtil.Log($"广告3已设置: 周期{Config.GetInstance().编辑框_周期_广告3}, 触发时间{sec}秒, 内容: {Config.GetInstance().编辑框_消息_广告3}");
+                    }
+                }
+            }
+
+            // 广告4
+            if (Config.GetInstance().编辑框_周期_广告4 > 0)
+            {
+                if (!string.IsNullOrEmpty(Config.GetInstance().编辑框_消息_广告4))
+                {
+                    if (RobotClient.CurrentResult.Issue % Config.GetInstance().编辑框_周期_广告4 == 0)
+                    {
+                        int sec = Config.GetInstance().编辑框_倒计时_封盘提醒 - Config.GetInstance().编辑框_时间_广告4;
+                        countdown.AddTimerAction(sec, () =>
+                        {
+                            RobotClient.SendMessage(Config.GetInstance().编辑框_消息_广告4);
+                        });
+                        LogUtil.Log($"广告4已设置: 周期{Config.GetInstance().编辑框_周期_广告4}, 触发时间{sec}秒, 内容: {Config.GetInstance().编辑框_消息_广告4}");
+                    }
+                }
+            }
+
+            LogUtil.Log("=====================");
+        }
+
+        /// <summary>
+        /// 重新加载所有用户的注单数据（用于修复注单丢失问题）
+        /// </summary>
+        private void ReloadAllUserBetRecords()
+        {
+            if (RobotClient.CurrentResult == null)
+            {
+                LogUtil.Log("无法重新加载注单数据：CurrentResult为null");
+                return;
+            }
+
+            LogUtil.Log($"开始重新加载所有用户注单数据，当前期次：{RobotClient.CurrentResult.Issue}期");
+            
+            int totalReloaded = 0;
+            foreach (User user in RobotClient.UserList)
+            {
+                try
+                {
+                    var oldCount = user.RecordList.Count;
+                    user.RecordList.Clear();
+                    user.RecordList.AddRange(BetRecordDao.GetByUserAndResult(user, RobotClient.CurrentResult));
+                    var newCount = user.RecordList.Count;
+                    
+                    if (newCount != oldCount)
+                    {
+                        LogUtil.Log($"用户 {user.NickName}({user.UserId}) 注单数据已更新：{oldCount} -> {newCount}");
+                        totalReloaded++;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogUtil.Log($"重新加载用户 {user.NickName}({user.UserId}) 注单数据失败：{ex.Message}");
+                }
+            }
+            
+            LogUtil.Log($"注单数据重新加载完成，共更新 {totalReloaded} 个用户的数据");
+            
+            // 刷新UI显示
+            this.Invoke(() =>
+            {
+                UpdateGameStatusUI();
+            });
+        }
+
+        /// <summary>
+        /// 更新游戏状态相关的UI显示
+        /// </summary>
+        private void UpdateGameStatusUI()
+        {
+            this.Invoke(() =>
+            {
+                // 更新当前竞猜期号
+                if (RobotClient.CurrentResult != null)
+                {
+                    lbl当前竞猜.Text = "当前竞猜:第" + RobotClient.CurrentResult.Issue + "期";
+                }
+                else
+                {
+                    lbl当前竞猜.Text = "当前竞猜:第?期";
+                }
+
+                // 更新上轮开奖信息
+                if (RobotClient.PrevResult != null)
+                {
+                    Result preResult = RobotClient.PrevResult;
+                    if (preResult == null || (preResult.Status > ResultStatus.无开盘 && preResult.Status < ResultStatus.已开奖))
+                    {
+                        lbl上轮开奖.Text = "上轮开奖:?+?+?=?";
+                        lbl上轮输赢.Text = "输赢:?";
+                    }
+                    else
+                    {
+                        lbl上轮开奖.Text = "上轮开奖:" + preResult.ThreeNum + "=" + preResult.Sum;
+                        double? sy = preResult.WinOrLose;
+                        lbl上轮输赢.Text = "输赢:" + (sy == 0 ? 0 : -sy);
+                    }
+                }
+                else
+                {
+                    lbl上轮开奖.Text = "上轮开奖:?+?+?=?";
+                    lbl上轮输赢.Text = "输赢:?";
+                }
+
+                // 更新今日总输赢
+                if (选择框_今日总输赢.Checked)
+                {
+                    选择框_今日总输赢.Text = "今日总输赢:" + BettingDao.GetTodayWinOrLose().ToString();
+                }
+            });
+        }
+
+        /// <summary>
+        /// 重置游戏状态UI为默认显示
+        /// </summary>
+        private void ResetGameStatusUI()
+        {
+            this.Invoke(() =>
+            {
+                lbl当前竞猜.Text = "当前竞猜:第?期";
+                lbl上轮开奖.Text = "上轮开奖:?+?+?=?";
+                lbl上轮输赢.Text = "输赢:?";
+            });
         }
 
         private bool keepPlaying = true;
@@ -1960,12 +2262,28 @@ namespace RobotApp
             #region 启动时加载初始化数据         
 
             //加载本地今日开奖结果
-            foreach (Result result in ResultDao.GetResult(RobotClient.CurrentLotterCode))
+            List<Result> todayResults = ResultDao.GetResult(RobotClient.CurrentLotterCode);
+            foreach (Result result in todayResults)
             {
                 RobotClient.ResultList.Add(result);
             }
 
-            //加载玩家列表
+            // 修复：确保CurrentResult指向正确的当前进行期次
+            // 查找状态为"竞猜中"或"已封盘"的期次作为当前期次
+            Result currentPeriod = todayResults.FirstOrDefault(r => r.Status == ResultStatus.竞猜中 || r.Status == ResultStatus.已封盘 || r.Status == ResultStatus.等待开奖);
+            if (currentPeriod != null)
+            {
+                // 将当前期次移动到ResultList的第一位
+                RobotClient.ResultList.Remove(currentPeriod);
+                RobotClient.ResultList.Insert(0, currentPeriod);
+                LogUtil.Log($"修复注单加载：设置当前期次为 {currentPeriod.Issue}期，状态：{currentPeriod.Status}");
+            }
+            else
+            {
+                LogUtil.Log("警告：未找到当前进行的期次，注单数据可能无法正确加载");
+            }
+
+            //加载玩家列表（此时CurrentResult已指向正确的期次）
             foreach (User user in UserDao.GetUsers())
             {
                 RobotClient.UserList.Add(user);

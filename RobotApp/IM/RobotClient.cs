@@ -248,17 +248,21 @@ namespace RobotApp.IM
             if (result != null)
             {
                 result.Type = lotterCode;
-                result.Status = ResultStatus.已开奖;             
+                result.Status = ResultStatus.已开奖;
+                LogUtil.Log($"成功获取开奖结果，期号: {result.Issue}, 状态: {result.Status}");             
             }
             else
             {
-                if (tryCount > 0)
+                if (tryCount > 1)  // 修改条件，确保还有重试次数
                 {
-                    result =  GetLatestResult(lotterCode, --tryCount);
+                    LogUtil.Log($"获取开奖结果失败，还有{tryCount-1}次重试机会");
+                    Thread.Sleep(1000);  // 等待1秒后重试
+                    result = GetLatestResult(lotterCode, tryCount - 1);
                 }
-                if(tryCount == 0)
+                else
                 {
-                    throw new Exception("获取开奖结果失败");
+                    LogUtil.Log("获取开奖结果失败，重试次数已用完");
+                    throw new Exception("获取开奖结果失败，重试次数已用完");
                 }              
             }
             return result;
