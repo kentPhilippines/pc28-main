@@ -123,23 +123,63 @@ namespace ImLibrary.Model
             }
 
             Task.Run(() =>
-            {                
-                var url = new Uri($"{IMConstant.WS_URL}?sendID={UserId}&token={Token}&platformID=5&operationID=init:{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}");               
-                //Debug.WriteLine(url);
-                using (IMSocket = new WebsocketClient(url))
+            {
+                try
                 {
-                    IMSocket.ReconnectTimeout = TimeSpan.FromSeconds(30);
-                    IMSocket.ReconnectionHappened.Subscribe(info => {
-                        IsRunning = true;
-                        ReconnectionHappened?.Invoke(this, info);
-                        Debug.WriteLine($"Reconnection happened, type: {info.Type}");
-                    });
+                    var url = new Uri($"{IMConstant.WS_URL}?sendID={UserId}&token={Token}&platformID=5&operationID=init:{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}");               
+                    LogUtil.Log($"正在连接WebSocket: {url}");
+                    
+                    using (IMSocket = new WebsocketClient(url))
+                    {
+                        // 设置重连策略
+                        IMSocket.ReconnectTimeout = TimeSpan.FromSeconds(30);
+                        IMSocket.ErrorReconnectTimeout = TimeSpan.FromSeconds(10);
+                        
+                        IMSocket.ReconnectionHappened.Subscribe(info => {
+                            IsRunning = true;
+                            ReconnectionHappened?.Invoke(this, info);
+                            LogUtil.Log($"WebSocket重连成功, 类型: {info.Type}");
+                            Debug.WriteLine($"Reconnection happened, type: {info.Type}");
+                        });
 
-                    IMSocket.DisconnectionHappened.Subscribe(info => {
-                        Debug.WriteLine(LoginName + " 掉线了"+DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")+" "+info.ToJson());
-                        IsRunning = false;                     
-                        OnDisconnect?.Invoke(this, info);   
-                    });
+                        IMSocket.DisconnectionHappened.Subscribe(info => {
+                            string logMessage = $"{LoginName} WebSocket连接断开 {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
+                            
+                            // 详细分析断开原因
+                            if (info.Exception != null)
+                            {
+                                if (info.Exception is System.Net.WebSockets.WebSocketException wsEx)
+                                {
+                                    if (wsEx.Message.Contains("status code '706'"))
+                                    {
+                                        logMessage += " - 服务器返回错误状态码706，可能是服务器配置问题或网络代理阻止了WebSocket连接";
+                                        LogUtil.Log("WebSocket连接失败: 服务器不支持WebSocket升级或存在网络代理问题");
+                                    }
+                                    else if (wsEx.Message.Contains("status code"))
+                                    {
+                                        logMessage += $" - WebSocket握手失败: {wsEx.Message}";
+                                    }
+                                    else
+                                    {
+                                        logMessage += $" - WebSocket错误: {wsEx.Message}";
+                                    }
+                                }
+                                else
+                                {
+                                    logMessage += $" - 连接异常: {info.Exception.Message}";
+                                }
+                                LogUtil.Log($"WebSocket异常详情: {info.Exception}");
+                            }
+                            else
+                            {
+                                logMessage += " - 正常断开连接";
+                            }
+                            
+                            LogUtil.Log(logMessage);
+                            Debug.WriteLine(logMessage + " " + info.ToJson());
+                            IsRunning = false;                     
+                            OnDisconnect?.Invoke(this, info);   
+                        });
 
                     IMSocket.MessageReceived.ObserveOn(TaskPoolScheduler.Default).Subscribe(msg =>
                     {
@@ -160,40 +200,163 @@ namespace ImLibrary.Model
                             OnReceiveRawPacketComomand?.Invoke(this, fromUid, nickName, message, fp);
                         }                                                                
                     });
-                    IMSocket.Start();
+                        // 启动WebSocket连接
+                        IMSocket.Start();
 
-                    //心跳包
-                    new Thread(HeartbeatWorker).Start();
+                        //心跳包
+                        new Thread(HeartbeatWorker).Start();
 
-                    exitEvent.WaitOne();
+                        exitEvent.WaitOne();
+                    }
+                }
+                catch (System.Net.WebSockets.WebSocketException wsEx)
+                {
+                    string errorMessage = "WebSocket连接失败: ";
+                    if (wsEx.Message.Contains("status code '706'"))
+                    {
+                        errorMessage += "服务器返回错误状态码706。这通常表示:\n" +
+                                      "1. 服务器不支持WebSocket连接\n" +
+                                      "2. 网络代理或防火墙阻止了WebSocket升级\n" +
+                                      "3. 服务器配置有问题\n" +
+                                      "建议检查网络设置或联系服务器管理员";
+                    }
+                    else if (wsEx.Message.Contains("status code"))
+                    {
+                        errorMessage += $"WebSocket握手失败: {wsEx.Message}";
+                    }
+                    else
+                    {
+                        errorMessage += wsEx.Message;
+                    }
+                    
+                    LogUtil.Log(errorMessage);
+                    LogUtil.LogEx(wsEx);
+                    IsRunning = false;
+                    throw new Exception(errorMessage, wsEx);
+                }
+                catch (UriFormatException uriEx)
+                {
+                    string errorMessage = $"WebSocket连接地址格式错误: {IMConstant.WS_URL}";
+                    LogUtil.Log(errorMessage);
+                    LogUtil.LogEx(uriEx);
+                    IsRunning = false;
+                    throw new Exception(errorMessage, uriEx);
+                }
+                catch (Exception ex)
+                {
+                    string errorMessage = $"WebSocket连接时发生未知错误: {ex.Message}";
+                    LogUtil.Log(errorMessage);
+                    LogUtil.LogEx(ex);
+                    IsRunning = false;
+                    throw new Exception(errorMessage, ex);
                 }
             });
 
-            while (IMSocket==null || !IMSocket.IsRunning)
+            // 等待连接建立，增加超时机制
+            int waitCount = 0;
+            int maxWaitCount = 60; // 最多等待30秒 (60 * 500ms)
+            
+            while ((IMSocket == null || !IMSocket.IsRunning) && waitCount < maxWaitCount)
             {
                 Thread.Sleep(500);
+                waitCount++;
             }
             
+            if (waitCount >= maxWaitCount)
+            {
+                string timeoutMessage = "WebSocket连接超时，请检查网络连接和服务器状态";
+                LogUtil.Log(timeoutMessage);
+                IsRunning = false;
+                throw new TimeoutException(timeoutMessage);
+            }
+            
+            LogUtil.Log($"WebSocket连接成功建立: {LoginName}");
             return true;
         }
 
         private void HeartbeatWorker()
         {
             int i = 0;
-            do
+            try
             {
-                if (i++ == 0)
+                LogUtil.Log($"心跳包线程启动: {LoginName}");
+                
+                do
                 {
-                    Debug.WriteLine("发送心跳包[" + LoginName + "]"+DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-                    IMSocket.Send(Convert.FromHexString(createPingMessage(UserId)));
-                }
-                if (i == 10)
-                {
-                    i = 0;
-                }
-                Thread.Sleep(1000);
-            } while (true);
-            //Debug.WriteLine("心跳已停止[" + UserCornet + "]");
+                    // 检查WebSocket连接状态
+                    if (IMSocket == null || !IMSocket.IsRunning || !IsRunning)
+                    {
+                        LogUtil.Log($"WebSocket连接已断开，停止心跳包: {LoginName}");
+                        break;
+                    }
+                    
+                    if (i++ == 0)
+                    {
+                        try
+                        {
+                            Debug.WriteLine("发送心跳包[" + LoginName + "]"+DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                            string pingMessage = createPingMessage(UserId);
+                            IMSocket.Send(Convert.FromHexString(pingMessage));
+                        }
+                        catch (Exception pingEx)
+                        {
+                            LogUtil.Log($"发送心跳包失败: {LoginName} - {pingEx.Message}");
+                            // 心跳包发送失败，可能连接已断开
+                            break;
+                        }
+                    }
+                    
+                    if (i == 10)
+                    {
+                        i = 0;
+                    }
+                    
+                    Thread.Sleep(1000);
+                    
+                } while (IsRunning && IMSocket != null && IMSocket.IsRunning);
+            }
+            catch (Exception ex)
+            {
+                LogUtil.Log($"心跳包线程异常: {LoginName} - {ex.Message}");
+                LogUtil.LogEx(ex);
+            }
+            finally
+            {
+                LogUtil.Log($"心跳包线程已停止: {LoginName}");
+            }
+        }
+
+        /// <summary>
+        /// 诊断WebSocket连接问题
+        /// </summary>
+        /// <returns>诊断信息</returns>
+        public string DiagnoseConnectionIssues()
+        {
+            var diagnosis = new System.Text.StringBuilder();
+            diagnosis.AppendLine("=== WebSocket连接诊断信息 ===");
+            diagnosis.AppendLine($"用户: {LoginName} ({UserId})");
+            diagnosis.AppendLine($"连接URL: {IMConstant.WS_URL}");
+            diagnosis.AppendLine($"当前状态: {(IsRunning ? "运行中" : "已停止")}");
+            diagnosis.AppendLine($"WebSocket状态: {(IMSocket?.IsRunning == true ? "已连接" : "未连接")}");
+            diagnosis.AppendLine();
+            
+            diagnosis.AppendLine("常见问题排查:");
+            diagnosis.AppendLine("1. 检查网络连接是否正常");
+            diagnosis.AppendLine("2. 确认服务器地址是否正确");
+            diagnosis.AppendLine("3. 检查是否有防火墙或代理阻止WebSocket连接");
+            diagnosis.AppendLine("4. 确认服务器是否支持WebSocket协议");
+            diagnosis.AppendLine("5. 检查Token是否有效且未过期");
+            
+            if (IMSocket != null && !IMSocket.IsRunning)
+            {
+                diagnosis.AppendLine();
+                diagnosis.AppendLine("建议操作:");
+                diagnosis.AppendLine("- 尝试重新登录");
+                diagnosis.AppendLine("- 检查网络设置");
+                diagnosis.AppendLine("- 联系系统管理员确认服务器状态");
+            }
+            
+            return diagnosis.ToString();
         }
 
         /// <summary>
@@ -201,10 +364,22 @@ namespace ImLibrary.Model
         /// </summary>
         public bool TryLogout()
         {
-            //exitEvent.Set();
-            IMSocket?.Stop(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, "注销登录");         
-            Token = null;
-            return true;
+            try
+            {
+                LogUtil.Log($"正在注销登录: {LoginName}");
+                IsRunning = false;
+                exitEvent.Set();
+                IMSocket?.Stop(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, "注销登录");         
+                Token = null;
+                LogUtil.Log($"注销登录成功: {LoginName}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                LogUtil.Log($"注销登录时出现异常: {LoginName} - {ex.Message}");
+                LogUtil.LogEx(ex);
+                return false;
+            }
         }
 
         /// <summary>
