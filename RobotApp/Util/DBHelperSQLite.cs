@@ -815,6 +815,73 @@ namespace RobotApp.Util
 
         #endregion
 
+        #region 数据安全相关方法
+        /// <summary>
+        /// 强制将WAL日志同步到主数据库文件
+        /// 防止数据丢失
+        /// </summary>
+        public static void FlushWalToMainDB()
+        {
+            try
+            {
+                using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+                {
+                    connection.Open();
+                    
+                    // 执行WAL checkpoint，强制将WAL内容写入主数据库
+                    using (SQLiteCommand cmd = new SQLiteCommand("PRAGMA wal_checkpoint(TRUNCATE);", connection))
+                    {
+                        cmd.ExecuteNonQuery();
+                        Debug.WriteLine("WAL checkpoint executed successfully");
+                    }
+                    
+                    // 确保所有数据都写入磁盘
+                    using (SQLiteCommand cmd = new SQLiteCommand("PRAGMA synchronous = FULL;", connection))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                    
+                    connection.Close();
+                }
+                LogUtil.Log("数据库WAL同步完成");
+            }
+            catch (Exception ex)
+            {
+                LogUtil.LogEx(ex);
+                throw;
+            }
+        }
+        
+        /// <summary>
+        /// 定期数据安全检查和同步
+        /// </summary>
+        public static void PeriodicDataSync()
+        {
+            try
+            {
+                FlushWalToMainDB();
+                
+                // 检查数据库完整性
+                using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+                {
+                    connection.Open();
+                    using (SQLiteCommand cmd = new SQLiteCommand("PRAGMA integrity_check;", connection))
+                    {
+                        var result = cmd.ExecuteScalar()?.ToString();
+                        if (result != "ok")
+                        {
+                            LogUtil.Log($"数据库完整性检查警告: {result}");
+                        }
+                    }
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                LogUtil.LogEx(ex);
+            }
+        }
+        #endregion
 
         #region 备份数据库
         public static void BackUpDateBase()

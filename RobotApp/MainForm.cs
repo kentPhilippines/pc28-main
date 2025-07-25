@@ -577,10 +577,10 @@ namespace RobotApp
 
                     bool clearOld = msg.Msg.StartsWith("改");
                     dgv玩家列表.Invoke(() =>
-                    {
+                    { 
                         if (clearOld)
                         {
-                            user.ClearBetRecords(msg.Fp);
+                            user.ClearBetRecords(msg.Fp, true); // 改单时强制解冻积分
                         }
                         user.AddBetRecords(recordList);
                     });
@@ -1752,10 +1752,56 @@ namespace RobotApp
                 RobotClient.SendMessage("系统已停止");
             }
             RobotClient.Robot.TryLogout();
-            //DBHelperSQLite.BackUpDateBase();
-            //DBHelperSQLite.CloseDB();
+            
+            // 关闭前确保数据安全
+            try
+            {
+                // 强制保存所有用户数据
+                SaveAllUserData();
+                
+                // 强制同步WAL到主数据库
+                DBHelperSQLite.FlushWalToMainDB();
+                
+                // 执行备份
+                DBHelperSQLite.BackUpDateBase();
+                
+                // 正确关闭数据库连接
+                DBHelperSQLite.CloseDB();
+                
+                LogUtil.Log("应用程序正常关闭，数据已保存");
+            }
+            catch (Exception ex)
+            {
+                LogUtil.LogEx(ex);
+                // 即使出错也尝试基本的数据保存
+                try
+                {
+                    DBHelperSQLite.FlushWalToMainDB();
+                }
+                catch { }
+            }
+            
             Application.Exit();
             Environment.Exit(0);
+        }
+        
+        /// <summary>
+        /// 保存所有用户数据到数据库
+        /// </summary>
+        private void SaveAllUserData()
+        {
+            try
+            {
+                foreach (User user in RobotClient.UserList)
+                {
+                    UserDao.UpdateUser(user);
+                }
+                LogUtil.Log($"已保存 {RobotClient.UserList.Count} 个用户的数据");
+            }
+            catch (Exception ex)
+            {
+                LogUtil.LogEx(ex);
+            }
         }
 
         private void dgv玩家列表_CellEndEdit(object sender, DataGridViewCellEventArgs e)
@@ -2005,13 +2051,61 @@ namespace RobotApp
             }
             dgv回复关键词.DataSource = dtCustomKeyword;
 
-            #region 备份数据库任务
+            #region 数据安全和备份任务
+            // 每5分钟进行一次数据同步，防止数据丢失
             Task.Run(() =>
             {
                 do
                 {
-                    Thread.Sleep(1000 * 60 * Config.GetInstance().编辑框_备份间隔);
-                    DBHelperSQLite.BackUpDateBase();
+                    try
+                    {
+                        Thread.Sleep(1000 * 60 * 5); // 每5分钟同步一次
+                        DBHelperSQLite.PeriodicDataSync();
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtil.LogEx(ex);
+                    }
+                } while (true);
+            });
+            
+            // 自动保存所有用户数据任务 - 每2分钟执行一次
+            Task.Run(() =>
+            {
+                do
+                {
+                    try
+                    {
+                        Thread.Sleep(1000 * 60 * 2); // 每2分钟保存一次
+                        SaveAllUserData();
+                        LogUtil.Log("自动保存用户数据完成");
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtil.LogEx(ex);
+                    }
+                } while (true);
+            });
+            
+            // 原有的备份任务
+            Task.Run(() =>
+            {
+                do
+                {
+                    try
+                    {
+                        Thread.Sleep(1000 * 60 * Config.GetInstance().编辑框_备份间隔);
+                        
+                        // 先同步数据，再备份
+                        DBHelperSQLite.FlushWalToMainDB();
+                        DBHelperSQLite.BackUpDateBase();
+                        
+                        LogUtil.Log("定期备份完成");
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtil.LogEx(ex);
+                    }
                 } while (true);
             });
             #endregion

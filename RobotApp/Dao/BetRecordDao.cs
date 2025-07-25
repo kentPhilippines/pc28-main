@@ -111,7 +111,23 @@ namespace RobotApp.Dao
                 }
                 if (!sdr.IsDBNull(7))
                 {
-                    record.Award = sdr.GetInt32(7);
+                    // 安全地获取Int32值，如果转换失败则使用默认值
+                    try
+                    {
+                        record.Award = sdr.GetInt32(7);
+                    }
+                    catch (InvalidCastException)
+                    {
+                        // 尝试转换为字符串再转换为Int32
+                        if (int.TryParse(sdr.GetValue(7).ToString(), out int awardValue))
+                        {
+                            record.Award = awardValue;
+                        }
+                        else
+                        {
+                            record.Award = 0; // 默认值
+                        }
+                    }
                 }
                 record.Fp = sdr.GetString(8);
                 record.Status = (BetRecordStatus)sdr.GetInt32(9);

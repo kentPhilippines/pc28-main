@@ -89,7 +89,19 @@ namespace RobotApp.Model
             else
             {
                 UserDao.UpdateUser(this);
-            }                
+            }
+            
+            // 重要积分变动立即同步到数据库，防止数据丢失
+            try
+            {
+                DBHelperSQLite.FlushWalToMainDB();
+            }
+            catch (Exception ex)
+            {
+                // 记录日志但不影响主流程
+                LogUtil.LogEx(ex);
+            }
+            
             OnPropertyChanged();
         }
 
