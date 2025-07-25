@@ -1,0 +1,134 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>PC28机器人</id>
+    <version>1.0.0</version>
+    <authors>PC28机器人</authors>
+    <description>Package Description</description>
+    <repository type="git" commit="d7ee620fa438d399ee82097c21277b0a192d71f7" />
+    <dependencies>
+      <group targetFramework="net8.0-windows7.0">
+        <dependency id="CommonLibrary" version="1.0.0" exclude="Build,Analyzers" />
+        <dependency id="PC28智能托" version="1.0.0" exclude="Build,Analyzers" />
+        <dependency id="LxLibrary" version="1.0.0" exclude="Build,Analyzers" />
+        <dependency id="ClosedXML" version="0.104.2" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.CSharp" version="4.7.0" exclude="Build,Analyzers" />
+        <dependency id="System.Data.SQLite" version="1.0.119" exclude="Build,Analyzers" />
+        <dependency id="System.Data.SqlClient" version="4.8.6" exclude="Build,Analyzers" />
+        <dependency id="System.Drawing.Common" version="9.0.0" exclude="Build,Analyzers" />
+        <dependency id="System.Management" version="9.0.0" exclude="Build,Analyzers" />
+        <dependency id="System.Runtime.CompilerServices.Unsafe" version="6.1.0" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+    <frameworkReferences>
+      <group targetFramework="net8.0-windows7.0">
+        <frameworkReference name="Microsoft.WindowsDesktop.App.WindowsForms" />
+      </group>
+    </frameworkReferences>
+    <contentFiles>
+      <files include="any/net8.0-windows7.0/Document/使用协议.rtf" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/Configs/config.ini" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/Document/占位字符.rtf" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/Images/time.png" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/Images/80-80.png" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/Images/apple.png" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/Images/canada.png" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/Images/computer.png" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/Images/helper.png" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/Images/info.png" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/Images/logo.ico" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/Images/pause.png" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/Images/Permissions.png" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/Images/robot.png" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/Images/save.png" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/Images/play.png" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/Images/calculator.png" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/logo.ico" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/Sounds/下分.wav" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/Sounds/卡奖.wav" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/Sounds/封盘.wav" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/Sounds/封盘失败.wav" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/Sounds/拉人.wav" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/Sounds/提示音.wav" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/Sounds/断网.wav" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/Sounds/查分.wav" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/Sounds/老版查钱.wav" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/Sounds/警报1.wav" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/Sounds/警报2.wav" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/Sounds/警报3.wav" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/Template/默认中档下注.ini" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/Template/默认低档下注.ini" buildAction="Content" />
+      <files include="any/net8.0-windows7.0/Template/默认高档下注.ini" buildAction="Content" />
+    </contentFiles>
+  </metadata>
+  <files>
+    <file src="D:\VSProject\PC28机器人\RobotApp\bin\Debug\net8.0-windows\PC28机器人.runtimeconfig.json" target="lib\net8.0-windows7.0\PC28机器人.runtimeconfig.json" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\bin\Debug\net8.0-windows\PC28机器人.dll" target="lib\net8.0-windows7.0\PC28机器人.dll" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Document\使用协议.rtf" target="content\Document\使用协议.rtf" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Document\使用协议.rtf" target="contentFiles\any\net8.0-windows7.0\Document\使用协议.rtf" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Configs\config.ini" target="content\Configs\config.ini" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Configs\config.ini" target="contentFiles\any\net8.0-windows7.0\Configs\config.ini" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Document\占位字符.rtf" target="content\Document\占位字符.rtf" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Document\占位字符.rtf" target="contentFiles\any\net8.0-windows7.0\Document\占位字符.rtf" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Images\time.png" target="content\Images\time.png" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Images\time.png" target="contentFiles\any\net8.0-windows7.0\Images\time.png" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Images\80-80.png" target="content\Images\80-80.png" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Images\80-80.png" target="contentFiles\any\net8.0-windows7.0\Images\80-80.png" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Images\apple.png" target="content\Images\apple.png" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Images\apple.png" target="contentFiles\any\net8.0-windows7.0\Images\apple.png" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Images\canada.png" target="content\Images\canada.png" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Images\canada.png" target="contentFiles\any\net8.0-windows7.0\Images\canada.png" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Images\computer.png" target="content\Images\computer.png" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Images\computer.png" target="contentFiles\any\net8.0-windows7.0\Images\computer.png" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Images\helper.png" target="content\Images\helper.png" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Images\helper.png" target="contentFiles\any\net8.0-windows7.0\Images\helper.png" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Images\info.png" target="content\Images\info.png" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Images\info.png" target="contentFiles\any\net8.0-windows7.0\Images\info.png" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Images\logo.ico" target="content\Images\logo.ico" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Images\logo.ico" target="contentFiles\any\net8.0-windows7.0\Images\logo.ico" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Images\pause.png" target="content\Images\pause.png" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Images\pause.png" target="contentFiles\any\net8.0-windows7.0\Images\pause.png" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Images\Permissions.png" target="content\Images\Permissions.png" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Images\Permissions.png" target="contentFiles\any\net8.0-windows7.0\Images\Permissions.png" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Images\robot.png" target="content\Images\robot.png" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Images\robot.png" target="contentFiles\any\net8.0-windows7.0\Images\robot.png" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Images\save.png" target="content\Images\save.png" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Images\save.png" target="contentFiles\any\net8.0-windows7.0\Images\save.png" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Images\play.png" target="content\Images\play.png" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Images\play.png" target="contentFiles\any\net8.0-windows7.0\Images\play.png" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Images\calculator.png" target="content\Images\calculator.png" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Images\calculator.png" target="contentFiles\any\net8.0-windows7.0\Images\calculator.png" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\logo.ico" target="content\logo.ico" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\logo.ico" target="contentFiles\any\net8.0-windows7.0\logo.ico" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Sounds\下分.wav" target="content\Sounds\下分.wav" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Sounds\下分.wav" target="contentFiles\any\net8.0-windows7.0\Sounds\下分.wav" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Sounds\卡奖.wav" target="content\Sounds\卡奖.wav" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Sounds\卡奖.wav" target="contentFiles\any\net8.0-windows7.0\Sounds\卡奖.wav" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Sounds\封盘.wav" target="content\Sounds\封盘.wav" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Sounds\封盘.wav" target="contentFiles\any\net8.0-windows7.0\Sounds\封盘.wav" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Sounds\封盘失败.wav" target="content\Sounds\封盘失败.wav" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Sounds\封盘失败.wav" target="contentFiles\any\net8.0-windows7.0\Sounds\封盘失败.wav" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Sounds\拉人.wav" target="content\Sounds\拉人.wav" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Sounds\拉人.wav" target="contentFiles\any\net8.0-windows7.0\Sounds\拉人.wav" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Sounds\提示音.wav" target="content\Sounds\提示音.wav" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Sounds\提示音.wav" target="contentFiles\any\net8.0-windows7.0\Sounds\提示音.wav" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Sounds\断网.wav" target="content\Sounds\断网.wav" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Sounds\断网.wav" target="contentFiles\any\net8.0-windows7.0\Sounds\断网.wav" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Sounds\查分.wav" target="content\Sounds\查分.wav" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Sounds\查分.wav" target="contentFiles\any\net8.0-windows7.0\Sounds\查分.wav" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Sounds\老版查钱.wav" target="content\Sounds\老版查钱.wav" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Sounds\老版查钱.wav" target="contentFiles\any\net8.0-windows7.0\Sounds\老版查钱.wav" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Sounds\警报1.wav" target="content\Sounds\警报1.wav" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Sounds\警报1.wav" target="contentFiles\any\net8.0-windows7.0\Sounds\警报1.wav" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Sounds\警报2.wav" target="content\Sounds\警报2.wav" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Sounds\警报2.wav" target="contentFiles\any\net8.0-windows7.0\Sounds\警报2.wav" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Sounds\警报3.wav" target="content\Sounds\警报3.wav" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Sounds\警报3.wav" target="contentFiles\any\net8.0-windows7.0\Sounds\警报3.wav" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Template\默认中档下注.ini" target="content\Template\默认中档下注.ini" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Template\默认中档下注.ini" target="contentFiles\any\net8.0-windows7.0\Template\默认中档下注.ini" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Template\默认低档下注.ini" target="content\Template\默认低档下注.ini" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Template\默认低档下注.ini" target="contentFiles\any\net8.0-windows7.0\Template\默认低档下注.ini" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Template\默认高档下注.ini" target="content\Template\默认高档下注.ini" />
+    <file src="D:\VSProject\PC28机器人\RobotApp\Template\默认高档下注.ini" target="contentFiles\any\net8.0-windows7.0\Template\默认高档下注.ini" />
+  </files>
+</package>

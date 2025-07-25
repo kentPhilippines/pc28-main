@@ -1,0 +1,48 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net8.0-windows</TargetFramework>
+        <UseWindowsForms>true</UseWindowsForms>
+        <OutputType>WinExe</OutputType>  <!-- 对于可执行文件 -->
+        <!-- 或 -->
+        <OutputType>Library</OutputType>  <!-- 对于类库 -->
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+        <EnableWindowsTargeting>true</EnableWindowsTargeting>
+        <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+        <ApplicationIcon>Images\bot.ico</ApplicationIcon>
+        <AssemblyName>PC28智能托</AssemblyName>
+    </PropertyGroup>
+    <ItemGroup>
+        <Content Include="Images\bot.ico" />
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Update="Properties\Settings.Designer.cs">
+            <DesignTimeSharedInput>True</DesignTimeSharedInput>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>Settings.settings</DependentUpon>
+        </Compile>
+        <Compile Update="Util\LogTextBox.cs">
+            <SubType>Component</SubType>
+        </Compile>
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\CommonLibrary\CommonLibrary.csproj" />
+        <ProjectReference Include="..\LxLibrary\LxLibrary.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+    </ItemGroup>
+    <ItemGroup>
+        <None Update="Native\main.dll">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Properties\Settings.settings">
+            <Generator>SettingsSingleFileGenerator</Generator>
+            <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+        </None>
+    </ItemGroup>
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.WindowsDesktop.App" />
+    </ItemGroup>
+</Project>

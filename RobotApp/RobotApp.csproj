@@ -1,0 +1,187 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0-windows</TargetFramework>
+        <OutputType>WinExe</OutputType>
+        <AssemblyName>PC28机器人</AssemblyName>
+        <UseWindowsForms>true</UseWindowsForms>
+        <EnableWindowsTargeting>true</EnableWindowsTargeting>
+        <ApplicationIcon>logo.ico</ApplicationIcon>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <StartupObject>RobotApp.Program</StartupObject>
+      
+        <!-- 发布相关属性 -->
+        <PublishDir>publish\</PublishDir>
+        <SelfContained>false</SelfContained>
+        <PublishSingleFile>false</PublishSingleFile>
+        <PublishReadyToRun>false</PublishReadyToRun>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+        <WarningLevel>3</WarningLevel>
+        <DocumentationFile></DocumentationFile>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+        <DebugType>none</DebugType>
+        <ErrorReport>none</ErrorReport>
+        <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    </PropertyGroup>
+
+    <!-- 移除旧的 ClickOnce 发布配置 -->
+
+    <ItemGroup>
+        <!-- 内容文件 -->
+        <Content Include="Document\使用协议.rtf">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Configs\config.ini">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Document\占位字符.rtf">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Images\time.png" />
+        <Content Include="Images\80-80.png" />
+        <Content Include="Images\apple.png" />
+        <Content Include="Images\canada.png" />
+        <Content Include="Images\computer.png" />
+        <Content Include="Images\helper.png" />
+        <Content Include="Images\info.png" />
+        <Content Include="Images\logo.ico" />
+        <Content Include="Images\pause.png" />
+        <Content Include="Images\Permissions.png" />
+        <Content Include="Images\robot.png" />
+        <Content Include="Images\save.png" />
+        <Content Include="Images\play.png" />
+        <Content Include="Images\calculator.png" />
+        <Content Include="logo.ico" />
+        <Content Include="Sounds\下分.wav">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Sounds\卡奖.wav">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Sounds\封盘.wav">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Sounds\封盘失败.wav">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Sounds\拉人.wav">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Sounds\提示音.wav">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Sounds\断网.wav">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Sounds\查分.wav">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Sounds\老版查钱.wav">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Sounds\警报1.wav">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Sounds\警报2.wav">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Sounds\警报3.wav">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Template\默认中档下注.ini">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Template\默认低档下注.ini">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="Template\默认高档下注.ini">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- NuGet 包引用 -->
+        <PackageReference Include="ClosedXML" Version="0.104.2" />
+        <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
+        <PackageReference Include="System.Data.SQLite" Version="1.0.119" />
+        <PackageReference Include="System.Drawing.Common" Version="9.0.0" />
+        <PackageReference Include="System.Management" Version="9.0.0" />
+        <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.0" />
+
+        <!-- Windows 兼容包 -->
+        <PackageReference Include="Microsoft.Windows.Compatibility" Version="8.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- 项目引用 -->
+        <ProjectReference Include="..\CommonLibrary\CommonLibrary.csproj" />
+        <ProjectReference Include="..\DummyApp\DummyApp.csproj" />
+        <ProjectReference Include="..\LxLibrary\LxLibrary.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- 特殊文件处理 -->
+        <Compile Update="BasicConfigForm.cs">
+            <SubType>Form</SubType>
+        </Compile>
+        <Compile Update="LoginForm.cs">
+            <SubType>Form</SubType>
+        </Compile>
+        <Compile Update="Properties\Settings.Designer.cs">
+            <DesignTimeSharedInput>True</DesignTimeSharedInput>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>Settings.settings</DependentUpon>
+        </Compile>
+        <Compile Update="RobotConfigForm.cs">
+            <SubType>Form</SubType>
+        </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="Properties\Settings.settings">
+            <Generator>SettingsSingleFileGenerator</Generator>
+            <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+        </None>
+        <None Include="Properties\app.manifest" />
+    </ItemGroup>
+
+    <!-- 清理构建后文件的 Target -->
+    <Target Name="_ProjectRemoveDependencyFiles" AfterTargets="AfterBuild">
+        <ItemGroup>
+            <_ProjectDependencyFile Include="$(OutputPath)BouncyCastle.Cryptography.dll" />
+            <_ProjectDependencyFile Include="$(OutputPath)DotNetty.Buffers.dll" />
+            <_ProjectDependencyFile Include="$(OutputPath)DotNetty.Codecs.dll" />
+            <_ProjectDependencyFile Include="$(OutputPath)DotNetty.Common.dll" />
+            <_ProjectDependencyFile Include="$(OutputPath)DotNetty.Transport.dll" />
+            <_ProjectDependencyFile Include="$(OutputPath)HtmlAgilityPack.dll" />
+            <_ProjectDependencyFile Include="$(OutputPath)Microsoft.Bcl.AsyncInterfaces.dll" />
+            <_ProjectDependencyFile Include="$(OutputPath)Microsoft.Extensions.DependencyInjection.Abstractions.dll" />
+            <_ProjectDependencyFile Include="$(OutputPath)Microsoft.Extensions.DependencyInjection.dll" />
+            <_ProjectDependencyFile Include="$(OutputPath)Microsoft.Extensions.Logging.Abstractions.dll" />
+            <_ProjectDependencyFile Include="$(OutputPath)Microsoft.Extensions.Logging.dll" />
+            <_ProjectDependencyFile Include="$(OutputPath)Microsoft.Extensions.Options.dll" />
+            <_ProjectDependencyFile Include="$(OutputPath)Microsoft.Extensions.Primitives.dll" />
+            <_ProjectDependencyFile Include="$(OutputPath)Microsoft.Office.Interop.Excel" />
+            <_ProjectDependencyFile Include="$(OutputPath)Newtonsoft.Json.dll" />
+            <_ProjectDependencyFile Include="$(OutputPath)System.Buffers.dll" />
+            <_ProjectDependencyFile Include="$(OutputPath)System.Collections.Immutable.dll" />
+            <_ProjectDependencyFile Include="$(OutputPath)System.Data.SQLite.dll" />
+            <_ProjectDependencyFile Include="$(OutputPath)System.Diagnostics.DiagnosticSource.dll" />
+            <_ProjectDependencyFile Include="$(OutputPath)System.Memory.dll" />
+            <_ProjectDependencyFile Include="$(OutputPath)System.Numerics.Vectors.dll" />
+            <_ProjectDependencyFile Include="$(OutputPath)System.Runtime.CompilerServices.Unsafe.dll" />
+            <_ProjectDependencyFile Include="$(OutputPath)System.Threading.Tasks.Extensions.dll" />
+            <_ProjectDependencyFile Include="$(OutputPath)System.ValueTuple.dll" />
+        </ItemGroup>
+        <Delete Files="@(_ProjectDependencyFile)" Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' " />
+    </Target>
+
+</Project>

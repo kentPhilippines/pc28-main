@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PublishUrlHistory>publish\</PublishUrlHistory>
+    <InstallUrlHistory>https://pc.lyxpj.com/setup/</InstallUrlHistory>
+    <SupportUrlHistory />
+    <UpdateUrlHistory />
+    <BootstrapperUrlHistory />
+    <ErrorReportUrlHistory />
+    <FallbackCulture>zh-CN</FallbackCulture>
+    <VerifyUploadedFiles>false</VerifyUploadedFiles>
+    <ProjectView>ProjectFiles</ProjectView>
+  </PropertyGroup>
+  <PropertyGroup>
+    <EnableSecurityDebugging>false</EnableSecurityDebugging>
+    <_LastSelectedProfileId>D:\VSProject\PC28机器人\RobotApp\Properties\PublishProfiles\正式版.pubxml</_LastSelectedProfileId>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Update="GameAssistantForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="MiniDialog\ChatRecordForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="MiniDialog\ManualOpenForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="MiniDialog\PermissionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="MiniDialog\SelectGroupForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="MiniDialog\UpdatePasswordForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
+</Project>

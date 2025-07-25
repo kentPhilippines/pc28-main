@@ -1,0 +1,481 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\VSProject\\RobotApp\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|d:\\vsproject\\robotapp\\gameassistantform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|solutionrelative:gameassistantform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|D:\\VSProject\\RobotApp\\gameassistantform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|solutionrelative:gameassistantform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|D:\\VSProject\\RobotApp\\dao\\recorddao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|solutionrelative:dao\\recorddao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|D:\\VSProject\\RobotApp\\util\\dbhelpersqlite.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|solutionrelative:util\\dbhelpersqlite.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|D:\\VSProject\\RobotApp\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|solutionrelative:mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|D:\\VSProject\\RobotApp\\util\\bettingutil.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|solutionrelative:util\\bettingutil.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|D:\\VSProject\\RobotApp\\model\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|solutionrelative:model\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|D:\\VSProject\\RobotApp\\dao\\bettingdao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|solutionrelative:dao\\bettingdao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|D:\\VSProject\\RobotApp\\model\\betrecord.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|solutionrelative:model\\betrecord.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|D:\\VSProject\\RobotApp\\dao\\resultdao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|solutionrelative:dao\\resultdao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|D:\\VSProject\\RobotApp\\model\\betting.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|solutionrelative:model\\betting.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|D:\\VSProject\\RobotApp\\dao\\betrecorddao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|solutionrelative:dao\\betrecorddao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|D:\\VSProject\\RobotApp\\dao\\userdao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|solutionrelative:dao\\userdao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|D:\\VSProject\\RobotApp\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|solutionrelative:mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|D:\\VSProject\\RobotApp\\util\\jsonextends.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|solutionrelative:util\\jsonextends.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|D:\\VSProject\\RobotApp\\util\\excelutil.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|solutionrelative:util\\excelutil.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|D:\\VSProject\\RobotApp\\dao\\scoredao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|solutionrelative:dao\\scoredao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|D:\\VSProject\\RobotApp\\im\\robotclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|solutionrelative:im\\robotclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|D:\\VSProject\\RobotApp\\model\\score.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|solutionrelative:model\\score.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|D:\\VSProject\\RobotApp\\im\\config.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|solutionrelative:im\\config.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|D:\\VSProject\\RobotApp\\util\\imconstant.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|solutionrelative:util\\imconstant.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|D:\\VSProject\\RobotApp\\util\\getsysteminfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|solutionrelative:util\\getsysteminfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|D:\\VSProject\\RobotApp\\loginchatform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|solutionrelative:loginchatform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|D:\\VSProject\\RobotApp\\minidialog\\chatrecordform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|solutionrelative:minidialog\\chatrecordform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|D:\\VSProject\\RobotApp\\minidialog\\chatrecordform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|solutionrelative:minidialog\\chatrecordform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|D:\\VSProject\\RobotApp\\model\\protocaltype.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|solutionrelative:model\\protocaltype.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|D:\\VSProject\\RobotApp\\loginchatform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|solutionrelative:loginchatform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|D:\\VSProject\\RobotApp\\im\\imrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|solutionrelative:im\\imrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|D:\\VSProject\\RobotApp\\minidialog\\selectgroupform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6C5C7A9-A9F1-4B71-B7AD-46C7E768FA08}|RobotApp.csproj|solutionrelative:minidialog\\selectgroupform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 5,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "RecordDao.cs",
+              "DocumentMoniker": "D:\\VSProject\\RobotApp\\Dao\\RecordDao.cs",
+              "RelativeDocumentMoniker": "Dao\\RecordDao.cs",
+              "ToolTip": "D:\\VSProject\\RobotApp\\Dao\\RecordDao.cs",
+              "RelativeToolTip": "Dao\\RecordDao.cs",
+              "ViewState": "AQIAACAAAAAAAAAAAAAUwC0AAAAMAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-25T18:08:44.765Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "MainForm.cs",
+              "DocumentMoniker": "D:\\VSProject\\RobotApp\\MainForm.cs",
+              "RelativeDocumentMoniker": "MainForm.cs",
+              "ToolTip": "D:\\VSProject\\RobotApp\\MainForm.cs",
+              "RelativeToolTip": "MainForm.cs",
+              "ViewState": "AQIAAHMAAAAAAAAAAAAAAHoAAAA9AAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-14T13:34:29.239Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "DBHelperSQLite.cs",
+              "DocumentMoniker": "D:\\VSProject\\RobotApp\\Util\\DBHelperSQLite.cs",
+              "RelativeDocumentMoniker": "Util\\DBHelperSQLite.cs",
+              "ToolTip": "D:\\VSProject\\RobotApp\\Util\\DBHelperSQLite.cs",
+              "RelativeToolTip": "Util\\DBHelperSQLite.cs",
+              "ViewState": "AQIAADwCAAAAAAAAAAAEwFACAAAQAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-25T16:16:30.735Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "BetRecordDao.cs",
+              "DocumentMoniker": "D:\\VSProject\\RobotApp\\Dao\\BetRecordDao.cs",
+              "RelativeDocumentMoniker": "Dao\\BetRecordDao.cs",
+              "ToolTip": "D:\\VSProject\\RobotApp\\Dao\\BetRecordDao.cs",
+              "RelativeToolTip": "Dao\\BetRecordDao.cs",
+              "ViewState": "AQIAADoAAAAAAAAAAAAEwDcAAAAPAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-23T16:39:00.407Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "User.cs",
+              "DocumentMoniker": "D:\\VSProject\\RobotApp\\Model\\User.cs",
+              "RelativeDocumentMoniker": "Model\\User.cs",
+              "ToolTip": "D:\\VSProject\\RobotApp\\Model\\User.cs",
+              "RelativeToolTip": "Model\\User.cs",
+              "ViewState": "AQIAADIAAAAAAAAAAAAEwCEAAAA4AAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-23T06:25:55.11Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "GameAssistantForm.cs [\u8BBE\u8BA1]",
+              "DocumentMoniker": "D:\\VSProject\\RobotApp\\GameAssistantForm.cs",
+              "RelativeDocumentMoniker": "GameAssistantForm.cs",
+              "ToolTip": "D:\\VSProject\\RobotApp\\GameAssistantForm.cs [\u8BBE\u8BA1]",
+              "RelativeToolTip": "GameAssistantForm.cs [\u8BBE\u8BA1]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-25T15:47:02.569Z",
+              "EditorCaption": " [\u8BBE\u8BA1]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "GameAssistantForm.cs",
+              "DocumentMoniker": "D:\\VSProject\\RobotApp\\GameAssistantForm.cs",
+              "RelativeDocumentMoniker": "GameAssistantForm.cs",
+              "ToolTip": "D:\\VSProject\\RobotApp\\GameAssistantForm.cs",
+              "RelativeToolTip": "GameAssistantForm.cs",
+              "ViewState": "AQIAACAAAAAAAAAAAAASwDQAAAAzAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-24T12:29:14.131Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "ExcelUtil.cs",
+              "DocumentMoniker": "D:\\VSProject\\RobotApp\\Util\\ExcelUtil.cs",
+              "RelativeDocumentMoniker": "Util\\ExcelUtil.cs",
+              "ToolTip": "D:\\VSProject\\RobotApp\\Util\\ExcelUtil.cs",
+              "RelativeToolTip": "Util\\ExcelUtil.cs",
+              "ViewState": "AQIAAAwAAAAAAAAAAAAUwBsAAAANAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-24T16:59:45.083Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "JsonExtends.cs",
+              "DocumentMoniker": "D:\\VSProject\\RobotApp\\Util\\JsonExtends.cs",
+              "RelativeDocumentMoniker": "Util\\JsonExtends.cs",
+              "ToolTip": "D:\\VSProject\\RobotApp\\Util\\JsonExtends.cs",
+              "RelativeToolTip": "Util\\JsonExtends.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAMAAAAXAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-23T06:28:39.972Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "UserDao.cs",
+              "DocumentMoniker": "D:\\VSProject\\RobotApp\\Dao\\UserDao.cs",
+              "RelativeDocumentMoniker": "Dao\\UserDao.cs",
+              "ToolTip": "D:\\VSProject\\RobotApp\\Dao\\UserDao.cs",
+              "RelativeToolTip": "Dao\\UserDao.cs",
+              "ViewState": "AQIAACoAAAAAAAAAAAAEwDgAAAAxAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-23T06:29:30.199Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "BettingUtil.cs",
+              "DocumentMoniker": "D:\\VSProject\\RobotApp\\Util\\BettingUtil.cs",
+              "RelativeDocumentMoniker": "Util\\BettingUtil.cs",
+              "ToolTip": "D:\\VSProject\\RobotApp\\Util\\BettingUtil.cs",
+              "RelativeToolTip": "Util\\BettingUtil.cs",
+              "ViewState": "AQIAAEMAAAAAAAAAAAAAAOgBAAAQAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-25T17:45:48.24Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "BettingDao.cs",
+              "DocumentMoniker": "D:\\VSProject\\RobotApp\\Dao\\BettingDao.cs",
+              "RelativeDocumentMoniker": "Dao\\BettingDao.cs",
+              "ToolTip": "D:\\VSProject\\RobotApp\\Dao\\BettingDao.cs",
+              "RelativeToolTip": "Dao\\BettingDao.cs",
+              "ViewState": "AQIAAAgAAAAAAAAAAAASwBoAAAAyAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-24T02:26:39.689Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "BetRecord.cs",
+              "DocumentMoniker": "D:\\VSProject\\RobotApp\\Model\\BetRecord.cs",
+              "RelativeDocumentMoniker": "Model\\BetRecord.cs",
+              "ToolTip": "D:\\VSProject\\RobotApp\\Model\\BetRecord.cs",
+              "RelativeToolTip": "Model\\BetRecord.cs",
+              "ViewState": "AQIAAB4AAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-25T17:24:42.052Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "Betting.cs",
+              "DocumentMoniker": "D:\\VSProject\\RobotApp\\Model\\Betting.cs",
+              "RelativeDocumentMoniker": "Model\\Betting.cs",
+              "ToolTip": "D:\\VSProject\\RobotApp\\Model\\Betting.cs",
+              "RelativeToolTip": "Model\\Betting.cs",
+              "ViewState": "AQIAAAwAAAAAAAAAAAAAAAcAAAABAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-21T05:28:07.216Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "ResultDao.cs",
+              "DocumentMoniker": "D:\\VSProject\\RobotApp\\Dao\\ResultDao.cs",
+              "RelativeDocumentMoniker": "Dao\\ResultDao.cs",
+              "ToolTip": "D:\\VSProject\\RobotApp\\Dao\\ResultDao.cs",
+              "RelativeToolTip": "Dao\\ResultDao.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAA0AAAArAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-23T13:21:44.653Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "MainForm.cs [\u8BBE\u8BA1]",
+              "DocumentMoniker": "D:\\VSProject\\RobotApp\\MainForm.cs",
+              "RelativeDocumentMoniker": "MainForm.cs",
+              "ToolTip": "D:\\VSProject\\RobotApp\\MainForm.cs [\u8BBE\u8BA1]",
+              "RelativeToolTip": "MainForm.cs [\u8BBE\u8BA1]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-25T15:01:40.65Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "ScoreDao.cs",
+              "DocumentMoniker": "D:\\VSProject\\RobotApp\\Dao\\ScoreDao.cs",
+              "RelativeDocumentMoniker": "Dao\\ScoreDao.cs",
+              "ToolTip": "D:\\VSProject\\RobotApp\\Dao\\ScoreDao.cs",
+              "RelativeToolTip": "Dao\\ScoreDao.cs",
+              "ViewState": "AQIAADcAAAAAAAAAAAAUwEkAAAAMAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-18T17:19:30.218Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "RobotClient.cs",
+              "DocumentMoniker": "D:\\VSProject\\RobotApp\\IM\\RobotClient.cs",
+              "RelativeDocumentMoniker": "IM\\RobotClient.cs",
+              "ToolTip": "D:\\VSProject\\RobotApp\\IM\\RobotClient.cs",
+              "RelativeToolTip": "IM\\RobotClient.cs",
+              "ViewState": "AQIAAHUAAAAAAAAAAAAAAIgAAAA8AAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-22T17:05:28.158Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "Score.cs",
+              "DocumentMoniker": "D:\\VSProject\\RobotApp\\Model\\Score.cs",
+              "RelativeDocumentMoniker": "Model\\Score.cs",
+              "ToolTip": "D:\\VSProject\\RobotApp\\Model\\Score.cs",
+              "RelativeToolTip": "Model\\Score.cs",
+              "ViewState": "AQIAAAMAAAAAAAAAAAAAACIAAAAiAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-24T12:42:46.428Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "Config.cs",
+              "DocumentMoniker": "D:\\VSProject\\RobotApp\\IM\\Config.cs",
+              "RelativeDocumentMoniker": "IM\\Config.cs",
+              "ToolTip": "D:\\VSProject\\RobotApp\\IM\\Config.cs",
+              "RelativeToolTip": "IM\\Config.cs",
+              "ViewState": "AQIAALwAAAAAAAAAAAApwM4AAAATAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-23T06:59:33.239Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "IMConstant.cs",
+              "DocumentMoniker": "D:\\VSProject\\RobotApp\\Util\\IMConstant.cs",
+              "RelativeDocumentMoniker": "Util\\IMConstant.cs",
+              "ToolTip": "D:\\VSProject\\RobotApp\\Util\\IMConstant.cs",
+              "RelativeToolTip": "Util\\IMConstant.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAgAAAAdAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-18T17:59:32.943Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "GetSystemInfo.cs",
+              "DocumentMoniker": "D:\\VSProject\\RobotApp\\Util\\GetSystemInfo.cs",
+              "RelativeDocumentMoniker": "Util\\GetSystemInfo.cs",
+              "ToolTip": "D:\\VSProject\\RobotApp\\Util\\GetSystemInfo.cs",
+              "RelativeToolTip": "Util\\GetSystemInfo.cs",
+              "ViewState": "AQIAAG0AAAAAAAAAAAApwH8AAAA1AAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-23T16:26:48.914Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "LoginChatForm.cs",
+              "DocumentMoniker": "D:\\VSProject\\RobotApp\\LoginChatForm.cs",
+              "RelativeDocumentMoniker": "LoginChatForm.cs",
+              "ToolTip": "D:\\VSProject\\RobotApp\\LoginChatForm.cs",
+              "RelativeToolTip": "LoginChatForm.cs",
+              "ViewState": "AQIAAEUAAAAAAAAAAAAEwFYAAAAQAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-14T16:26:40.365Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "ChatRecordForm.cs",
+              "DocumentMoniker": "D:\\VSProject\\RobotApp\\MiniDialog\\ChatRecordForm.cs",
+              "RelativeDocumentMoniker": "MiniDialog\\ChatRecordForm.cs",
+              "ToolTip": "D:\\VSProject\\RobotApp\\MiniDialog\\ChatRecordForm.cs",
+              "RelativeToolTip": "MiniDialog\\ChatRecordForm.cs",
+              "ViewState": "AQIAABsAAAAAAAAAAAAAAEMAAAAuAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-20T13:00:44.42Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "ChatRecordForm.cs [\u8BBE\u8BA1]",
+              "DocumentMoniker": "D:\\VSProject\\RobotApp\\MiniDialog\\ChatRecordForm.cs",
+              "RelativeDocumentMoniker": "MiniDialog\\ChatRecordForm.cs",
+              "ToolTip": "D:\\VSProject\\RobotApp\\MiniDialog\\ChatRecordForm.cs [\u8BBE\u8BA1]",
+              "RelativeToolTip": "MiniDialog\\ChatRecordForm.cs [\u8BBE\u8BA1]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-22T06:42:16.654Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
+              "Title": "ProtocalType.cs",
+              "DocumentMoniker": "D:\\VSProject\\RobotApp\\Model\\ProtocalType.cs",
+              "RelativeDocumentMoniker": "Model\\ProtocalType.cs",
+              "ToolTip": "D:\\VSProject\\RobotApp\\Model\\ProtocalType.cs",
+              "RelativeToolTip": "Model\\ProtocalType.cs",
+              "ViewState": "AQIAAAMAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-20T13:45:03.983Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 26,
+              "Title": "LoginChatForm.cs [\u8BBE\u8BA1]",
+              "DocumentMoniker": "D:\\VSProject\\RobotApp\\LoginChatForm.cs",
+              "RelativeDocumentMoniker": "LoginChatForm.cs",
+              "ToolTip": "D:\\VSProject\\RobotApp\\LoginChatForm.cs [\u8BBE\u8BA1]",
+              "RelativeToolTip": "LoginChatForm.cs [\u8BBE\u8BA1]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-20T11:51:19.193Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 27,
+              "Title": "IMRequest.cs",
+              "DocumentMoniker": "D:\\VSProject\\RobotApp\\IM\\IMRequest.cs",
+              "RelativeDocumentMoniker": "IM\\IMRequest.cs",
+              "ToolTip": "D:\\VSProject\\RobotApp\\IM\\IMRequest.cs",
+              "RelativeToolTip": "IM\\IMRequest.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABMAAAAbAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-14T14:51:06.751Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 28,
+              "Title": "SelectGroupForm.cs",
+              "DocumentMoniker": "D:\\VSProject\\RobotApp\\MiniDialog\\SelectGroupForm.cs",
+              "RelativeDocumentMoniker": "MiniDialog\\SelectGroupForm.cs",
+              "ToolTip": "D:\\VSProject\\RobotApp\\MiniDialog\\SelectGroupForm.cs",
+              "RelativeToolTip": "MiniDialog\\SelectGroupForm.cs",
+              "ViewState": "AQIAAAYAAAAAAAAAAAAAABMAAAAfAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-18T17:30:58.045Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
