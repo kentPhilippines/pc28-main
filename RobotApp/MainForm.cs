@@ -144,38 +144,64 @@ namespace RobotApp
 
         private void TcpSocketClient_OnReceiveRawPacketComomand(IMUser imUser, string fromUid, string nickName, string message, string fp)
         {
+            // 记录IM消息接收详细日志
+            LogUtil.Log("=== IM消息处理开始 ===");
+            LogUtil.Log($"处理时间: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+            LogUtil.Log($"机器人状态: {(RobotClient.ROBOT_RUNNING ? "运行中" : "已停止")}");
+            LogUtil.Log($"发送用户ID: {fromUid}");
+            LogUtil.Log($"发送昵称: {nickName}");
+            LogUtil.Log($"消息内容: {message}");
+            LogUtil.Log($"指纹: {fp}");
+            LogUtil.Log($"机器人自己ID: {RobotClient.Robot.UserId}");
+            
             if (!RobotClient.ROBOT_RUNNING)
             {
+                LogUtil.Log("机器人未运行，忽略消息");
+                LogUtil.Log("===================");
                 return;
             }
             if (fromUid == RobotClient.Robot.UserId)
             {
+                LogUtil.Log("消息来自机器人自己，忽略");
+                LogUtil.Log("===================");
                 return;
             }
             User user = RobotClient.GetUser(fromUid);
+            LogUtil.Log($"用户查询结果: {(user != null ? $"找到用户 {user.NickName}" : "用户不存在")}");
 
             //玩家不存在时新增
             if (user == null)
             {
+                LogUtil.Log("用户不存在，准备创建新用户");
                 //机器人自己不要添加
                 if (fromUid == RobotClient.Robot.UserId)
                 {
+                    LogUtil.Log("发送者是机器人自己，不创建用户");
+                    LogUtil.Log("===================");
                     return;
                 }
                 //管理员列表内的名称不要添加
                 if (Config.GetInstance().编辑框_管理名单.Contains(nickName))
                 {
+                    LogUtil.Log($"昵称【{nickName}】在管理员名单中，不创建用户");
+                    LogUtil.Log("===================");
                     Debug.WriteLine("昵称不能是管理名单内的");
                     return;
                 }
+                LogUtil.Log($"创建新用户：ID={fromUid}, 昵称={nickName}");
                 user = new User(fromUid, nickName);
                 UserDao.AddUser(user);
+                LogUtil.Log("新用户创建成功");
             }
             try
             {
+                string originalMessage = message;
                 message = Regex.Replace(message, "<.*?>", string.Empty).Trim();
+                LogUtil.Log($"消息清理前: 【{originalMessage}】");
+                LogUtil.Log($"消息清理后: 【{message}】");
 
                 #region 自定义回复关键词处理
+                LogUtil.Log("开始处理自定义关键词匹配");
                 foreach (DataRow dr in dtCustomKeyword.Rows)
                 {
                     bool matchFlag = false;
@@ -211,19 +237,24 @@ namespace RobotApp
                     }
                     if (matchFlag)
                     {
+                        LogUtil.Log($"关键词匹配成功：【{dr["关键词"]}】，匹配模式：{dr["匹配模式"]}");
                         if (dr["提示声音"].ToString() != "无")
                         {
+                            LogUtil.Log($"播放提示声音：{dr["提示声音"]}");
                             SoundUtil.Play(dr["提示声音"].ToString());
                         }
                         if (!string.IsNullOrEmpty(dr["回复内容"].ToString()))
                         {
+                            LogUtil.Log($"自动回复：{dr["回复内容"]}");
                             user.ReplayMessage(dr["回复内容"].ToString());
                         }
                     }
                 }
+                LogUtil.Log("自定义关键词处理完成");
                 #endregion
 
                 # region 保存消息
+                LogUtil.Log("开始保存消息到数据库");
                 Model.Message msg = new Model.Message();
                 msg.Code = fromUid;
                 msg.NickName = user.NickName;
@@ -232,41 +263,56 @@ namespace RobotApp
                 msg.Fp = fp;
                 MessageDao.AddMessage(msg);
                 RobotClient.MsgQueue.Enqueue(msg);
+                LogUtil.Log($"消息已保存并加入队列，消息ID：{msg.Id}");
                 #endregion
 
                 #region 自动退分
+                LogUtil.Log("检查自动退分触发条件");
                 if (!Config.GetInstance().单选框_退分_流水关闭 && Config.GetInstance().编辑框_退分_今天流水关键字 == message)
                 {
+                    LogUtil.Log($"触发今天流水退分，关键字：{message}");
                     dgv玩家列表.Invoke(() =>
                     {
                         BettingUtil.ProcessAutoRunningWater(1, user);
                     });
+                    LogUtil.Log("今天流水退分处理完成");
+                    LogUtil.Log("===================");
                     return;
                 }
                 if (!Config.GetInstance().单选框_退分_流水关闭 && Config.GetInstance().编辑框_退分_昨天流水关键字 == message)
                 {
+                    LogUtil.Log($"触发昨天流水退分，关键字：{message}");
                     dgv玩家列表.Invoke(() =>
                     {
                         BettingUtil.ProcessAutoRunningWater(2, user);
                     });
+                    LogUtil.Log("昨天流水退分处理完成");
+                    LogUtil.Log("===================");
                     return;
                 }
                 if (!Config.GetInstance().单选框_退分_回水关闭 && Config.GetInstance().编辑框_退分_今天回水关键字 == message)
                 {
+                    LogUtil.Log($"触发今天回水退分，关键字：{message}");
                     dgv玩家列表.Invoke(() =>
                     {
                         BettingUtil.ProcessAutoReturnWater(1, user);
                     });
+                    LogUtil.Log("今天回水退分处理完成");
+                    LogUtil.Log("===================");
                     return;
                 }
                 if (!Config.GetInstance().单选框_退分_回水关闭 && Config.GetInstance().编辑框_退分_昨天回水关键字 == message)
                 {
+                    LogUtil.Log($"触发昨天回水退分，关键字：{message}");
                     dgv玩家列表.Invoke(() =>
                     {
                         BettingUtil.ProcessAutoReturnWater(2, user);
                     });
+                    LogUtil.Log("昨天回水退分处理完成");
+                    LogUtil.Log("===================");
                     return;
                 }
+                LogUtil.Log("未触发自动退分条件");
                 #endregion
 
 
@@ -549,34 +595,48 @@ namespace RobotApp
                     }
                 }
 
+                LogUtil.Log("开始处理下注逻辑");
                 if (!isSoha)
                 {
                     recordList.AddRange(BettingUtil.ProcessMessage(user, msg));
+                    LogUtil.Log($"BettingUtil.ProcessMessage处理完成，下注记录数：{recordList.Count}");
                 }
 
                 if (recordList.Count > 0)
                 {
+                    LogUtil.Log($"检测到下注记录，共{recordList.Count}条记录");
+                    LogUtil.Log($"当前游戏状态：{RobotClient.CurrentResult.Status}");
+                    
                     if (RobotClient.CurrentResult.Status != ResultStatus.竞猜中)
                     {
+                        LogUtil.Log("游戏已封盘，拒绝下注");
                         if (Config.GetInstance().选择框_提示_停猜后)
                         {
                             user.ReplayMessage("已封盘,禁止下注!");
                         }
+                        LogUtil.Log("===================");
                         return;
                     }
 
                     //本次下注总分
                     double bczf = recordList.Sum(bet => bet.Amount);
+                    LogUtil.Log($"本次下注总分：{bczf}");
                     double availableForChange = user.Jifen_Available;
+                    LogUtil.Log($"用户当前可用积分：{availableForChange}");
+                    
                     if (msg.Msg.StartsWith("改"))
                     {
                         availableForChange += user.Blzf;
+                        LogUtil.Log($"检测到改单，可用积分增加本轮下注：{user.Blzf}，总可用：{availableForChange}");
                     }
+                    
                     if (availableForChange < bczf)
                     {
+                        LogUtil.Log($"积分不足，需要：{bczf}，可用：{availableForChange}");
                         //积分不足
                         if (Config.GetInstance().选择框_超额无效)
                         {
+                            LogUtil.Log("超额无效模式，清除本期所有下注");
                             dgv玩家列表.Invoke(() =>
                             {
                                 user.ClearBetRecords(msg.Fp);
@@ -585,12 +645,20 @@ namespace RobotApp
                         }
                         else
                         {
+                            LogUtil.Log("普通模式，提示积分不足");
                             user.ReplayMessage("\r\n积分[" + user.Jifen + "],\r\n已冻结[" + (user.FrozenJifen - user.Blzf) + "],\r\n本轮已下注[" + user.Blzf + "],\r\n积分不足，本次下注无效！");
                         }
+                        LogUtil.Log("===================");
                         return;
                     }
 
+                    LogUtil.Log("积分检查通过，开始保存下注记录");
                     bool clearOld = msg.Msg.StartsWith("改");
+                    if (clearOld)
+                    {
+                        LogUtil.Log("改单操作，先清除旧的下注记录");
+                    }
+                    
                     dgv玩家列表.Invoke(() =>
                     { 
                         if (clearOld)
@@ -599,13 +667,18 @@ namespace RobotApp
                         }
                         user.AddBetRecords(recordList);
                     });
+                    LogUtil.Log("下注记录保存成功");
 
                     string result = BettingUtil.ProcessRule(user.RecordList);
+                    LogUtil.Log($"规则检查结果：{(string.IsNullOrEmpty(result) ? "通过" : result)}");
+                    
                     if (result != "")
                     {
+                        LogUtil.Log("规则检查失败");
                         //猜猜超注超额，本期全部竞猜无效
                         if (Config.GetInstance().选择框_超额无效)
                         {
+                            LogUtil.Log("超额无效模式，清除所有下注");
                             dgv玩家列表.Invoke(() =>
                             {
                                 user.ClearBetRecords(msg.Fp);
@@ -614,8 +687,10 @@ namespace RobotApp
                         }
                         else
                         {
+                            LogUtil.Log("提示规则违规但不清除下注");
                             user.ReplayMessage(result);
                         }
+                        LogUtil.Log("===================");
                         return;
                     }
 
@@ -628,12 +703,21 @@ namespace RobotApp
                     if (Config.GetInstance().选择框_下注提示)
                     {
                         user.ReplayMessage("本期下注：" + user.Ccnr);
+                        LogUtil.Log($"发送下注提示：{user.Ccnr}");
                     }
                 }
+                else
+                {
+                    LogUtil.Log("没有解析到下注记录，可能是查询、聊天或其他非下注消息");
+                }
+                LogUtil.Log("IM消息处理成功完成");
+                LogUtil.Log("===================");
             }
             catch (Exception ex)
             {
                 LogUtil.LogEx(ex);
+                LogUtil.Log($"IM消息处理异常：{ex.Message}");
+                LogUtil.Log("===================");
                 MessageBox.Show(ex.Message);
             }
         }
@@ -1278,6 +1362,21 @@ namespace RobotApp
         private void timer当前时间_Tick(object sender, EventArgs e)
         {
             stalShowTime.Text = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        }
+
+        private void timer开奖数据更新_Tick(object sender, EventArgs e)
+        {
+            // 定时自动获取开奖数据更新
+            try
+            {
+                LogUtil.Log("定时自动获取开奖数据更新开始");
+                LoadTodayResult();
+                LogUtil.Log("定时自动获取开奖数据更新完成");
+            }
+            catch (Exception ex)
+            {
+                LogUtil.Log($"定时获取开奖数据失败: {ex.Message}");
+            }
         }
 
         private void tsbBg28_Click(object sender, EventArgs e)
@@ -2287,6 +2386,8 @@ namespace RobotApp
             foreach (User user in UserDao.GetUsers())
             {
                 RobotClient.UserList.Add(user);
+                // 修复积分冻结不一致问题
+                user.FixFrozenJifenInconsistency();
             }
             SortDataGridView(ListSortDirection.Descending);
 

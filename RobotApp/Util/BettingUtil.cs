@@ -402,7 +402,7 @@ namespace RobotApp.Util
                                         returnWater = todayReturnWater;
                                     }
 
-                                    user.ChangeJifen(returnWater, RecordType.退自动回水);
+                                    user.ChangeJifen(returnWater, RecordType.退回剩余自助流水);
                                 }
                             }
                         }
@@ -764,7 +764,7 @@ namespace RobotApp.Util
         }
 
         /// <summary>
-        /// 计算自动回水
+        /// 计算自助回水
         /// </summary>
         /// <param name="user"></param>
         /// <param name="sumWater"></param>
@@ -910,7 +910,7 @@ namespace RobotApp.Util
         }
 
         /// <summary>
-        /// 自动回水
+        /// 自助回水
         /// </summary>
         /// <param name="timeType">时间类型：1今天 2昨天</param>
         /// <param name="user">用户</param>
@@ -997,7 +997,7 @@ namespace RobotApp.Util
                 }
             }
 
-            user.ChangeJifen(returnWater, RecordType.自动回水, 0, "", dateTime);
+                            user.ChangeJifen(returnWater, RecordType.自助回水, 0, "", dateTime);
 
             if (Config.GetInstance().选择框_退分_回水不显示累计返水)
             {

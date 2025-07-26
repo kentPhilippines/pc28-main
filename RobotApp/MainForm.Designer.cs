@@ -607,6 +607,7 @@
             lbl距离开奖 = new System.Windows.Forms.Label();
             lbl当前竞猜 = new System.Windows.Forms.Label();
             timer当前时间 = new System.Windows.Forms.Timer(components);
+            timer开奖数据更新 = new System.Windows.Forms.Timer(components);
             mycolor = new System.Windows.Forms.ColorDialog();
             tsTools.SuspendLayout();
             statusStrip1.SuspendLayout();
@@ -7147,6 +7148,12 @@
             timer当前时间.Interval = 1000;
             timer当前时间.Tick += timer当前时间_Tick;
             // 
+            // timer开奖数据更新
+            // 
+            timer开奖数据更新.Enabled = true;
+            timer开奖数据更新.Interval = 120000; // 2分钟 = 120000毫秒
+            timer开奖数据更新.Tick += timer开奖数据更新_Tick;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
@@ -7394,6 +7401,7 @@
         private System.Windows.Forms.CheckBox 选择框_实时排序;
         private System.Windows.Forms.DataGridView dgv开奖数据;
         private System.Windows.Forms.Timer timer当前时间;
+        private System.Windows.Forms.Timer timer开奖数据更新;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel4;
         private System.Windows.Forms.ToolStripStatusLabel tssl监控群ID;
         private System.Windows.Forms.GroupBox groupBox2;

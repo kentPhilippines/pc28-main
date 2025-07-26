@@ -97,7 +97,7 @@ namespace RobotApp.Dao
         public static DataTable Water(DateTime date)
         {
             DateTime date2 = date.AddDays(1);
-            string typeStr = string.Join(",", new int[] { (int)RecordType.退分, (int)RecordType.退分撤消, (int)RecordType.自动回水, (int)RecordType.退自动回水, (int)RecordType.自动流水 });
+            string typeStr = string.Join(",", new int[] { (int)RecordType.退分, (int)RecordType.退分撤消, (int)RecordType.自助回水, (int)RecordType.退回剩余自助流水, (int)RecordType.自动流水 });
             string sql = @"select b.nick_name, a.amount, a.type, a.remark, a.create_time
                     from t_record a left join t_user b on a.code=b.code
                     where a.create_time between @beginTime and @endTime and b.is_dummy=0 and a.type in (" + typeStr+") order by a.create_time desc";
@@ -116,7 +116,7 @@ namespace RobotApp.Dao
             while (sdr.Read())
             {
                 dt.Rows.Add(i++,
-                    sdr.GetString(0),
+                    吗  .GetString(0),
                     sdr.GetDouble(1),
                     (RecordType)sdr.GetInt32(2),
                     sdr.IsDBNull(3) ? "" : sdr.GetString(3),
@@ -144,7 +144,7 @@ namespace RobotApp.Dao
         }
 
         /// <summary>
-        /// 今日自动回水水次数
+        /// 今日自助回水水次数
         /// </summary>
         /// <param name="userCode"></param>
         /// <returns></returns>

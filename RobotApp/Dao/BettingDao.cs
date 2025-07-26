@@ -257,7 +257,7 @@ namespace RobotApp.Dao
         }
 
         /// <summary>
-        /// 获取指定日期未回回水下注，用于计算自动回水
+        /// 获取指定日期未回回水下注，用于计算自助回水
         /// </summary>
         /// <param name="userCode"></param>
         /// <param name="date"></param>
@@ -302,7 +302,7 @@ namespace RobotApp.Dao
         }
 
         /// <summary>
-        /// 今日自动回水总额
+        /// 今日自助回水总额
         /// </summary>
         /// <param name="bettingId"></param>
         /// <returns></returns>

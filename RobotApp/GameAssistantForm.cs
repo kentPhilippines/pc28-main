@@ -777,7 +777,7 @@ namespace RobotApp
                 int cstf = dr9 == null ? 0 : (int)(long)dr9["sumAmount"];
                 //自动流水6
                 int zdls = dr6 == null ? 0 : (int)(long)dr6["sumAmount"];
-                //自动回水7, 退自动回水8
+                //自助回水7, 退自助回水8
                 int zdfs = dr7 == null ? 0 : (int)(long)dr7["sumAmount"];
                 int tzdfx = dr8 == null ? 0 : (int)(long)dr8["sumAmount"];
 
@@ -789,7 +789,7 @@ namespace RobotApp
             dgv回水计算.DataSource = dt;
 
             txt竞猜总人数.Text = dt.Rows.Count.ToString();
-            txt竞猜总分数.Text = dt.Compute("Sum(投注总额)", "").ToString();
+            txt竞猜总分数.Text = dt.Compute("Sum(流水) ", "").ToString();
             txt赢总人数.Text = dt.Compute("Count(盈亏)", "盈亏>0").ToString() + "/" + dt.Compute("Sum(盈亏)", "盈亏>0").ToString();
             txt输总人数.Text = dt.Compute("Count(盈亏)", "盈亏<0").ToString() + "/" + dt.Compute("Sum(盈亏)", "盈亏<0").ToString();
             object jczyk = dt.Compute("Sum(盈亏)", "");

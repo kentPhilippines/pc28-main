@@ -8,6 +8,7 @@ using RobotApp.MiniDialog;
 using RobotApp.Util;
 using System;
 using System.Collections.Generic;
+using System.Data.SQLite;
 using System.Linq;
 using System.Runtime.Versioning;
 
@@ -308,10 +309,84 @@ namespace RobotApp.Model
             {
                 return;
             }
-            BetRecordDao.Add(betRecords);
-            RecordList.AddRange(betRecords);
-            FreezeJifen(betRecords.Sum(b => b.Amount));
-            OnPropertyChanged();
+
+            // 使用数据库事务确保下注记录保存和积分冻结的原子性
+            using (var connection = new SQLiteConnection(DBHelperSQLite.connectionString))
+            {
+                connection.Open();
+                using (var transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        // 1. 保存下注记录到数据库（在事务中）
+                        string sql = @"insert into t_bet_record (result_id, user_code, bet_type, keyword, amount, fp, status, remark, is_water, is_deleted) 
+                            values (@resultId, @userCode, @betType, @keyword, @amount, @fp, @status, @remark, @isWater, @isDeleted)";
+                        
+                        foreach (BetRecord record in betRecords)
+                        {
+                            using (var command = new SQLiteCommand(sql, connection, transaction))
+                            {
+                                command.Parameters.AddWithValue("@resultId", record.ResultId);
+                                command.Parameters.AddWithValue("@userCode", record.UserCode);
+                                command.Parameters.AddWithValue("@betType", (int)record.BetType);
+                                command.Parameters.AddWithValue("@keyword", record.Keyword);
+                                command.Parameters.AddWithValue("@amount", record.Amount);
+                                command.Parameters.AddWithValue("@fp", record.Fp);
+                                command.Parameters.AddWithValue("@status", (int)record.Status);
+                                command.Parameters.AddWithValue("@remark", record.Remark);
+                                command.Parameters.AddWithValue("@isWater", record.IsWater);
+                                command.Parameters.AddWithValue("@isDeleted", record.IsDeleted);
+                                
+                                command.ExecuteNonQuery();
+                                // 获取自增ID
+                                command.CommandText = "SELECT last_insert_rowid()";
+                                record.Id = Convert.ToInt32(command.ExecuteScalar());
+                                command.CommandText = sql; // 重置SQL
+                            }
+                        }
+
+                        // 2. 冻结积分（在事务中）
+                        int freezeAmount = betRecords.Sum(b => b.Amount);
+                        if (Jifen - freezeAmount < 0)
+                        {
+                            throw new Exception($"【{NickName}】积分不足！");
+                        }
+                        
+                        FrozenJifen += freezeAmount;
+                        
+                        // 更新用户信息到数据库（在事务中）
+                        string updateUserSql = @"update t_user set nick_name=@nickName, jifen=@jifen, frozen_jifen=@frozenJifen,
+                            slyk=@slyk, status=@status, is_dummy=@isDummy where code=@code";
+                        using (var updateCommand = new SQLiteCommand(updateUserSql, connection, transaction))
+                        {
+                            updateCommand.Parameters.AddWithValue("@nickName", this.NickName);
+                            updateCommand.Parameters.AddWithValue("@jifen", this.Jifen);
+                            updateCommand.Parameters.AddWithValue("@frozenJifen", this.FrozenJifen);
+                            updateCommand.Parameters.AddWithValue("@slyk", this.Slyk);
+                            updateCommand.Parameters.AddWithValue("@status", (int)this.Status);
+                            updateCommand.Parameters.AddWithValue("@isDummy", this.IsDummy);
+                            updateCommand.Parameters.AddWithValue("@code", this.UserId);
+                            updateCommand.ExecuteNonQuery();
+                        }
+
+                        // 提交事务
+                        transaction.Commit();
+                        
+                        // 3. 只有事务成功后才更新内存状态
+                        RecordList.AddRange(betRecords);
+                        OnPropertyChanged();
+                        
+                        LogUtil.Log($"用户【{NickName}】下注事务提交成功，记录数：{betRecords.Count}，冻结积分：{freezeAmount}");
+                    }
+                    catch (Exception ex)
+                    {
+                        // 回滚事务
+                        transaction.Rollback();
+                        LogUtil.Log($"用户【{NickName}】下注事务失败，已回滚：{ex.Message}");
+                        throw new Exception($"下注失败：{ex.Message}");
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -552,6 +627,35 @@ namespace RobotApp.Model
             get
             {
                 return RecordList.Count(b => b.Keyword == "双");
+            }
+        }
+
+        /// <summary>
+        /// 修复积分冻结不一致问题
+        /// 检查用户的下注记录总额与冻结积分是否一致，如果不一致则自动修复
+        /// </summary>
+        public void FixFrozenJifenInconsistency()
+        {
+            try
+            {
+                // 计算当前期次的实际下注总额
+                int actualBetAmount = RecordList.Sum(br => br.Amount);
+                
+                // 如果冻结积分与实际下注总额不一致，则修复
+                if (FrozenJifen != actualBetAmount)
+                {
+                    LogUtil.Log($"用户【{NickName}】积分冻结不一致：冻结积分={FrozenJifen}，实际下注={actualBetAmount}，正在修复...");
+                    
+                    // 直接设置正确的冻结积分
+                    FrozenJifen = actualBetAmount;
+                    UserDao.UpdateUser(this);
+                    
+                    LogUtil.Log($"用户【{NickName}】积分冻结已修复：冻结积分={FrozenJifen}");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogUtil.Log($"修复用户【{NickName}】积分冻结失败：{ex.Message}");
             }
         }
     }
