@@ -116,7 +116,7 @@ namespace RobotApp.Dao
             while (sdr.Read())
             {
                 dt.Rows.Add(i++,
-                    吗  .GetString(0),
+                    sdr.GetString(0),
                     sdr.GetDouble(1),
                     (RecordType)sdr.GetInt32(2),
                     sdr.IsDBNull(3) ? "" : sdr.GetString(3),

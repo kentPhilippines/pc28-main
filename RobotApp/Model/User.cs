@@ -68,29 +68,115 @@ namespace RobotApp.Model
                 throw new ArgumentOutOfRangeException("上下分数不能为0");
             }            
 
-            Record rec = new Record();
-            rec.Code = UserId;
-            rec.type = type;          
-            rec.Amount = amount;
-            rec.OldAmount = Jifen;
-            rec.NowAmount = Jifen + amount;
-            rec.CreateTime = DateTime.Now;
-            rec.ScoreId = scoreId;
-            rec.Remark = remark;
-            if (calcTime != null)
+            // 使用数据库事务确保积分变更的原子性，防止软件闪退导致数据不一致
+            using (var connection = new SQLiteConnection(DBHelperSQLite.connectionString))
             {
-                rec.CalcTime = (DateTime)calcTime;
-            }
-            RecordDao.AddRecord(rec);
+                connection.Open();
+                using (var transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        // 1. 添加积分变更记录
+                        Record rec = new Record();
+                        rec.Code = UserId;
+                        rec.type = type;          
+                        rec.Amount = amount;
+                        rec.OldAmount = Jifen;
+                        rec.NowAmount = Jifen + amount;
+                        rec.CreateTime = DateTime.Now;
+                        rec.ScoreId = scoreId;
+                        rec.Remark = remark;
+                        if (calcTime != null)
+                        {
+                            rec.CalcTime = (DateTime)calcTime;
+                        }
+                        
+                        string recordSql = @"insert into t_record (code, old_amount, amount, now_amount, type, remark, score_id, create_time, calc_time, create_user) 
+                            values (@code, @oldAmount, @amount, @nowAmount, @type, @remark, @scoreId, @createTime, @calcTime, @createUser)";
+                        using (var recordCommand = new SQLiteCommand(recordSql, connection, transaction))
+                        {
+                            recordCommand.Parameters.AddWithValue("@code", rec.Code ?? "");
+                            recordCommand.Parameters.AddWithValue("@oldAmount", rec.OldAmount);
+                            recordCommand.Parameters.AddWithValue("@amount", rec.Amount);
+                            recordCommand.Parameters.AddWithValue("@nowAmount", rec.NowAmount);
+                            recordCommand.Parameters.AddWithValue("@type", (int)rec.type);
+                            recordCommand.Parameters.AddWithValue("@remark", rec.Remark ?? "");
+                            recordCommand.Parameters.AddWithValue("@scoreId", rec.ScoreId);
+                            recordCommand.Parameters.AddWithValue("@createTime", rec.CreateTime);
+                            recordCommand.Parameters.AddWithValue("@calcTime", calcTime.HasValue ? (object)calcTime.Value : DBNull.Value);
+                            recordCommand.Parameters.AddWithValue("@createUser", rec.CreateUser ?? "");
+                            recordCommand.ExecuteNonQuery();
+                        }
 
-            Jifen += amount;
-            if(type == RecordType.下分 || type == RecordType.下注)
-            {
-                UnfreezeJifen(Math.Abs(amount));
-            }
-            else
-            {
-                UserDao.UpdateUser(this);
+                        // 2. 更新用户积分和冻结积分
+                        int oldJifen = Jifen;
+                        int oldFrozenJifen = FrozenJifen;
+                        
+                        Jifen += amount;
+                        
+                        if(type == RecordType.下分 || type == RecordType.下注)
+                        {
+                            // 解冻积分
+                            int unfreezeAmount = Math.Abs(amount);
+                            
+                            // 程序重启后自动修复冻结积分不一致问题
+                            if(FrozenJifen < unfreezeAmount)
+                            {
+                                // 检查是否是程序重启后的第一次操作
+                                if(RobotClient.CurrentResult == null || RecordList.Count == 0)
+                                {
+                                    LogUtil.Log($"检测到程序重启后冻结积分不一致，用户【{NickName}】自动修复：原冻结积分={FrozenJifen}，需解冻={unfreezeAmount}");
+                                    // 修复冻结积分：如果是下分操作，直接设置为0（完全解冻）
+                                    if(type == RecordType.下分)
+                                    {
+                                        FrozenJifen = 0;
+                                        LogUtil.Log($"用户【{NickName}】回分操作，冻结积分已重置为0");
+                                    }
+                                    else
+                                    {
+                                        // 如果是下注操作但冻结积分不足，抛出异常
+                                        throw new Exception($"【{NickName}】可解冻积分不足，冻结积分【{FrozenJifen}】,需解冻【{unfreezeAmount}】！");
+                                    }
+                                }
+                                else
+                                {
+                                    throw new Exception($"【{NickName}】可解冻积分不足，冻结积分【{FrozenJifen}】,需解冻【{unfreezeAmount}】！");
+                                }
+                            }
+                            else
+                            {
+                                FrozenJifen -= unfreezeAmount;
+                            }
+                        }
+                        
+                        // 3. 更新用户信息到数据库
+                        string updateUserSql = @"update t_user set nick_name=@nickName, jifen=@jifen, frozen_jifen=@frozenJifen,
+                            slyk=@slyk, status=@status, is_dummy=@isDummy where code=@code";
+                        using (var updateCommand = new SQLiteCommand(updateUserSql, connection, transaction))
+                        {
+                            updateCommand.Parameters.AddWithValue("@nickName", this.NickName);
+                            updateCommand.Parameters.AddWithValue("@jifen", this.Jifen);
+                            updateCommand.Parameters.AddWithValue("@frozenJifen", this.FrozenJifen);
+                            updateCommand.Parameters.AddWithValue("@slyk", this.Slyk);
+                            updateCommand.Parameters.AddWithValue("@status", (int)this.Status);
+                            updateCommand.Parameters.AddWithValue("@isDummy", this.IsDummy);
+                            updateCommand.Parameters.AddWithValue("@code", this.UserId);
+                            updateCommand.ExecuteNonQuery();
+                        }
+
+                        // 提交事务
+                        transaction.Commit();
+                        
+                        LogUtil.Log($"用户【{NickName}】积分变更事务提交成功，类型：{type}，变更积分：{amount}，当前积分：{Jifen}，冻结积分：{FrozenJifen}");
+                    }
+                    catch (Exception ex)
+                    {
+                        // 回滚事务
+                        transaction.Rollback();
+                        LogUtil.Log($"用户【{NickName}】积分变更事务失败，已回滚：{ex.Message}");
+                        throw; // 重新抛出异常
+                    }
+                }
             }
             
             // 重要积分变动立即同步到数据库，防止数据丢失
@@ -122,9 +208,61 @@ namespace RobotApp.Model
             {
                 throw new Exception($"【{NickName}】积分不足！");
             }
-            FrozenJifen += amount;
-            UserDao.UpdateUser(this);
+            
+            // 使用数据库事务确保冻结积分操作的原子性和持久性
+            using (var connection = new SQLiteConnection(DBHelperSQLite.connectionString))
+            {
+                connection.Open();
+                using (var transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        int oldFrozenJifen = FrozenJifen;
+                        FrozenJifen += amount;
+                        
+                        // 更新用户信息到数据库
+                        string updateUserSql = @"update t_user set nick_name=@nickName, jifen=@jifen, frozen_jifen=@frozenJifen,
+                            slyk=@slyk, status=@status, is_dummy=@isDummy where code=@code";
+                        using (var updateCommand = new SQLiteCommand(updateUserSql, connection, transaction))
+                        {
+                            updateCommand.Parameters.AddWithValue("@nickName", this.NickName);
+                            updateCommand.Parameters.AddWithValue("@jifen", this.Jifen);
+                            updateCommand.Parameters.AddWithValue("@frozenJifen", this.FrozenJifen);
+                            updateCommand.Parameters.AddWithValue("@slyk", this.Slyk);
+                            updateCommand.Parameters.AddWithValue("@status", (int)this.Status);
+                            updateCommand.Parameters.AddWithValue("@isDummy", this.IsDummy);
+                            updateCommand.Parameters.AddWithValue("@code", this.UserId);
+                            updateCommand.ExecuteNonQuery();
+                        }
+
+                        // 提交事务
+                        transaction.Commit();
+                        
+                        LogUtil.Log($"用户【{NickName}】冻结积分事务提交成功，冻结金额：{amount}，当前冻结积分：{FrozenJifen}");
+                    }
+                    catch (Exception ex)
+                    {
+                        // 回滚事务
+                        transaction.Rollback();
+                        FrozenJifen -= amount; // 恢复内存状态
+                        
+                        LogUtil.Log($"用户【{NickName}】冻结积分事务失败，已回滚：{ex.Message}");
+                        throw; // 重新抛出异常
+                    }
+                }
+            }
+            
+            // 立即同步到磁盘，防止数据丢失
+            try
+            {
+                DBHelperSQLite.FlushWalToMainDB();
+            }
+            catch (Exception ex)
+            {
+                LogUtil.LogEx(ex);
+            }
         }
+        
         /// <summary>
         /// 解冻积分
         /// </summary>
@@ -136,8 +274,59 @@ namespace RobotApp.Model
             {
                 throw new Exception($"【{NickName}】可解冻积分不足，冻结积分【{FrozenJifen}】,需解冻【{amount}】！");
             }
-            FrozenJifen -= amount;
-            UserDao.UpdateUser(this);
+            
+            // 使用数据库事务确保解冻积分操作的原子性和持久性
+            using (var connection = new SQLiteConnection(DBHelperSQLite.connectionString))
+            {
+                connection.Open();
+                using (var transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        int oldFrozenJifen = FrozenJifen;
+                        FrozenJifen -= amount;
+                        
+                        // 更新用户信息到数据库
+                        string updateUserSql = @"update t_user set nick_name=@nickName, jifen=@jifen, frozen_jifen=@frozenJifen,
+                            slyk=@slyk, status=@status, is_dummy=@isDummy where code=@code";
+                        using (var updateCommand = new SQLiteCommand(updateUserSql, connection, transaction))
+                        {
+                            updateCommand.Parameters.AddWithValue("@nickName", this.NickName);
+                            updateCommand.Parameters.AddWithValue("@jifen", this.Jifen);
+                            updateCommand.Parameters.AddWithValue("@frozenJifen", this.FrozenJifen);
+                            updateCommand.Parameters.AddWithValue("@slyk", this.Slyk);
+                            updateCommand.Parameters.AddWithValue("@status", (int)this.Status);
+                            updateCommand.Parameters.AddWithValue("@isDummy", this.IsDummy);
+                            updateCommand.Parameters.AddWithValue("@code", this.UserId);
+                            updateCommand.ExecuteNonQuery();
+                        }
+
+                        // 提交事务
+                        transaction.Commit();
+                        
+                        LogUtil.Log($"用户【{NickName}】解冻积分事务提交成功，解冻金额：{amount}，当前冻结积分：{FrozenJifen}");
+                    }
+                    catch (Exception ex)
+                    {
+                        // 回滚事务
+                        transaction.Rollback();
+                        FrozenJifen += amount; // 恢复内存状态
+                        
+                        LogUtil.Log($"用户【{NickName}】解冻积分事务失败，已回滚：{ex.Message}");
+                        throw; // 重新抛出异常
+                    }
+                }
+            }
+            
+            // 立即同步到磁盘，防止数据丢失
+            try
+            {
+                DBHelperSQLite.FlushWalToMainDB();
+            }
+            catch (Exception ex)
+            {
+                LogUtil.LogEx(ex);
+            }
         }
 
         /// <summary>
@@ -206,6 +395,9 @@ namespace RobotApp.Model
             this._isDummy = isDummy;
             this.Slyk = slyk;
             this.UserId = userId;
+            
+            // 记录从数据库加载的冻结积分
+            LogUtil.Log($"用户【{nickName}】从数据库加载：积分={jiFen}，冻结积分={frozenJifen}");
             
             // 修复注单加载：添加详细日志和异常处理
             try
@@ -638,19 +830,89 @@ namespace RobotApp.Model
         {
             try
             {
+                // 智能判断是否需要修复冻结积分
+                // 如果程序刚重启且CurrentResult为null，不进行修复，保持数据库中的冻结积分
+                if (RobotClient.CurrentResult == null)
+                {
+                    LogUtil.Log($"用户【{NickName}】程序重启检测：当前期次为null，保持冻结积分={FrozenJifen}，跳过一致性检查");
+                    return;
+                }
+                
                 // 计算当前期次的实际下注总额
                 int actualBetAmount = RecordList.Sum(br => br.Amount);
                 
-                // 如果冻结积分与实际下注总额不一致，则修复
+                // 只有在明确有期次信息且下注记录与冻结积分不匹配时才修复
                 if (FrozenJifen != actualBetAmount)
                 {
-                    LogUtil.Log($"用户【{NickName}】积分冻结不一致：冻结积分={FrozenJifen}，实际下注={actualBetAmount}，正在修复...");
+                    // 进一步判断：如果RecordList为空但冻结积分不为0，可能是记录加载问题
+                    if (RecordList.Count == 0 && FrozenJifen > 0)
+                    {
+                        LogUtil.Log($"用户【{NickName}】检测到：冻结积分={FrozenJifen}，但内存中无下注记录，可能是记录加载问题，保持原冻结积分");
+                        return; // 不修复，可能是记录还未加载完全
+                    }
                     
-                    // 直接设置正确的冻结积分
-                    FrozenJifen = actualBetAmount;
-                    UserDao.UpdateUser(this);
+                    LogUtil.Log($"用户【{NickName}】积分冻结不一致：冻结积分={FrozenJifen}，实际下注={actualBetAmount}，期次={RobotClient.CurrentResult.Issue}，正在修复...");
                     
-                    LogUtil.Log($"用户【{NickName}】积分冻结已修复：冻结积分={FrozenJifen}");
+                    int oldFrozenJifen = FrozenJifen;
+                    
+                    // 使用数据库事务确保修复操作的原子性和持久性
+                    using (var connection = new SQLiteConnection(DBHelperSQLite.connectionString))
+                    {
+                        connection.Open();
+                        using (var transaction = connection.BeginTransaction())
+                        {
+                            try
+                            {
+                                // 设置正确的冻结积分
+                                FrozenJifen = actualBetAmount;
+                                
+                                // 更新用户信息到数据库
+                                string updateUserSql = @"update t_user set nick_name=@nickName, jifen=@jifen, frozen_jifen=@frozenJifen,
+                                    slyk=@slyk, status=@status, is_dummy=@isDummy where code=@code";
+                                using (var updateCommand = new SQLiteCommand(updateUserSql, connection, transaction))
+                                {
+                                    updateCommand.Parameters.AddWithValue("@nickName", this.NickName);
+                                    updateCommand.Parameters.AddWithValue("@jifen", this.Jifen);
+                                    updateCommand.Parameters.AddWithValue("@frozenJifen", this.FrozenJifen);
+                                    updateCommand.Parameters.AddWithValue("@slyk", this.Slyk);
+                                    updateCommand.Parameters.AddWithValue("@status", (int)this.Status);
+                                    updateCommand.Parameters.AddWithValue("@isDummy", this.IsDummy);
+                                    updateCommand.Parameters.AddWithValue("@code", this.UserId);
+                                    updateCommand.ExecuteNonQuery();
+                                }
+
+                                // 提交事务
+                                transaction.Commit();
+                                
+                                LogUtil.Log($"用户【{NickName}】积分冻结修复事务提交成功：{oldFrozenJifen} -> {FrozenJifen}");
+                            }
+                            catch (Exception ex)
+                            {
+                                // 回滚事务
+                                transaction.Rollback();
+                                FrozenJifen = oldFrozenJifen; // 恢复内存状态
+                                
+                                LogUtil.Log($"用户【{NickName}】积分冻结修复事务失败，已回滚：{ex.Message}");
+                                throw; // 重新抛出异常
+                            }
+                        }
+                    }
+                    
+                    // 立即同步到磁盘，防止数据丢失
+                    try
+                    {
+                        DBHelperSQLite.FlushWalToMainDB();
+                    }
+                    catch (Exception ex)
+                    {
+                        LogUtil.LogEx(ex);
+                    }
+                    
+                    LogUtil.Log($"用户【{NickName}】积分冻结已修复并同步：冻结积分={FrozenJifen}");
+                }
+                else
+                {
+                    LogUtil.Log($"用户【{NickName}】冻结积分检查完成：冻结积分={FrozenJifen}，实际下注={actualBetAmount}，数据一致");
                 }
             }
             catch (Exception ex)

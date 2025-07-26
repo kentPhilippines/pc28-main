@@ -32,7 +32,7 @@ namespace RobotApp.Model
         /// <summary>
         /// 用户Code
         /// </summary>
-        public string Code { get; set; }
+        public string? Code { get; set; }
         /// <summary>
         /// 原积分
         /// </summary>
@@ -52,7 +52,7 @@ namespace RobotApp.Model
         /// <summary>
         /// 备注
         /// </summary>
-        public string Remark { get; set; }
+        public string? Remark { get; set; }
         /// <summary>
         /// 帐变时间
         /// </summary>
@@ -64,7 +64,7 @@ namespace RobotApp.Model
         /// <summary>
         /// 帐变操作人
         /// </summary>
-        public string CreateUser { get; set; }
+        public string? CreateUser { get; set; }
         /// <summary>
         /// 上下分ID
         /// </summary>

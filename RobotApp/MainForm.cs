@@ -985,7 +985,20 @@ namespace RobotApp
 
                     this.Invoke(() =>
                     {
-                        RobotClient.ResultList.Add(result);
+                        // 检查是否已存在相同期号的结果，避免重复添加
+                        Result existingResult = RobotClient.ResultList.FirstOrDefault(r => r.Issue == result.Issue);
+                        if (existingResult == null)
+                        {
+                            RobotClient.ResultList.Add(result);
+                            LogUtil.Log($"新增开奖结果：期号{result.Issue}");
+                        }
+                        else
+                        {
+                            // 更新现有结果
+                            existingResult.SetResult(result);
+                            LogUtil.Log($"更新开奖结果：期号{result.Issue}");
+                        }
+                        
                         BettingUtil.ProcessSettlement(result, RobotClient.UserList.ToList());
                         if (选择框_实时排序.Checked)
                         {
@@ -2193,15 +2206,64 @@ namespace RobotApp
         {
             try
             {
-                foreach (User user in RobotClient.UserList)
+                // 使用事务批量保存所有用户数据，确保原子性和持久性
+                using (var connection = new SQLiteConnection(DBHelperSQLite.connectionString))
                 {
-                    UserDao.UpdateUser(user);
+                    connection.Open();
+                    using (var transaction = connection.BeginTransaction())
+                    {
+                        try
+                        {
+                            string updateUserSql = @"update t_user set nick_name=@nickName, jifen=@jifen, frozen_jifen=@frozenJifen,
+                                slyk=@slyk, status=@status, is_dummy=@isDummy where code=@code";
+                            
+                            foreach (User user in RobotClient.UserList)
+                            {
+                                using (var updateCommand = new SQLiteCommand(updateUserSql, connection, transaction))
+                                {
+                                    updateCommand.Parameters.AddWithValue("@nickName", user.NickName);
+                                    updateCommand.Parameters.AddWithValue("@jifen", user.Jifen);
+                                    updateCommand.Parameters.AddWithValue("@frozenJifen", user.FrozenJifen);
+                                    updateCommand.Parameters.AddWithValue("@slyk", user.Slyk);
+                                    updateCommand.Parameters.AddWithValue("@status", (int)user.Status);
+                                    updateCommand.Parameters.AddWithValue("@isDummy", user.IsDummy);
+                                    updateCommand.Parameters.AddWithValue("@code", user.UserId);
+                                    updateCommand.ExecuteNonQuery();
+                                }
+                            }
+                            
+                            // 提交事务
+                            transaction.Commit();
+                            
+                            LogUtil.Log($"批量保存用户数据事务提交成功，用户数量：{RobotClient.UserList.Count}");
+                        }
+                        catch (Exception ex)
+                        {
+                            // 回滚事务
+                            transaction.Rollback();
+                            LogUtil.Log($"批量保存用户数据事务失败，已回滚：{ex.Message}");
+                            throw; // 重新抛出异常
+                        }
+                    }
                 }
-                LogUtil.Log($"已保存 {RobotClient.UserList.Count} 个用户的数据");
+                
+                // 强制同步到磁盘，防止数据丢失
+                try
+                {
+                    DBHelperSQLite.FlushWalToMainDB();
+                    LogUtil.Log("用户数据已强制同步到磁盘");
+                }
+                catch (Exception ex)
+                {
+                    LogUtil.LogEx(ex);
+                }
+                
+                LogUtil.Log($"已安全保存 {RobotClient.UserList.Count} 个用户的数据（包含冻结积分）");
             }
             catch (Exception ex)
             {
                 LogUtil.LogEx(ex);
+                throw; // 确保调用方知道保存失败
             }
         }
 
@@ -2386,8 +2448,16 @@ namespace RobotApp
             foreach (User user in UserDao.GetUsers())
             {
                 RobotClient.UserList.Add(user);
-                // 修复积分冻结不一致问题
-                user.FixFrozenJifenInconsistency();
+                // 只有在当前期次明确存在时才进行冻结积分一致性检查
+                if (RobotClient.CurrentResult != null)
+                {
+                    LogUtil.Log($"程序启动后为用户【{user.NickName}】执行冻结积分一致性检查，期次：{RobotClient.CurrentResult.Issue}");
+                    user.FixFrozenJifenInconsistency();
+                }
+                else
+                {
+                    LogUtil.Log($"程序启动时跳过用户【{user.NickName}】的冻结积分检查（当前期次为null），保持冻结积分：{user.FrozenJifen}");
+                }
             }
             SortDataGridView(ListSortDirection.Descending);
 
@@ -3055,12 +3125,77 @@ namespace RobotApp
 
         private void dgv玩家列表_DataError(object sender, DataGridViewDataErrorEventArgs e)
         {
-            // 如果错误类型是由于尝试设置无效值导致的
-            if (e.Exception != null && e.Exception.GetType() == typeof(FormatException))
+            try
             {
-                MessageBox.Show("输入的值格式不正确，请检查输入值！");
-                // 取消编辑状态
-                dgv玩家列表.CancelEdit();
+                // 详细记录错误信息到系统日志
+                string errorDetails = $"DataGridView数据错误详情:";
+                errorDetails += $"\n  - 控件: dgv玩家列表";
+                errorDetails += $"\n  - 行索引: {e.RowIndex}";
+                errorDetails += $"\n  - 列索引: {e.ColumnIndex}";
+                errorDetails += $"\n  - 错误上下文: {e.Context}";
+                
+                if (e.Exception != null)
+                {
+                    errorDetails += $"\n  - 异常类型: {e.Exception.GetType().Name}";
+                    errorDetails += $"\n  - 异常消息: {e.Exception.Message}";
+                    errorDetails += $"\n  - 堆栈跟踪: {e.Exception.StackTrace}";
+                }
+
+                // 尝试获取出错的单元格值
+                try
+                {
+                    if (e.RowIndex >= 0 && e.ColumnIndex >= 0 && 
+                        e.RowIndex < dgv玩家列表.Rows.Count && 
+                        e.ColumnIndex < dgv玩家列表.Columns.Count)
+                    {
+                        var cellValue = dgv玩家列表[e.ColumnIndex, e.RowIndex].Value;
+                        var columnName = dgv玩家列表.Columns[e.ColumnIndex].Name;
+                        errorDetails += $"\n  - 列名: {columnName}";
+                        errorDetails += $"\n  - 单元格值: {cellValue ?? "null"}";
+                        errorDetails += $"\n  - 值类型: {cellValue?.GetType().Name ?? "null"}";
+                    }
+                }
+                catch (Exception cellEx)
+                {
+                    errorDetails += $"\n  - 获取单元格信息失败: {cellEx.Message}";
+                }
+
+                // 记录到系统日志
+                LogUtil.Log($"[ERROR] {errorDetails}");
+
+                // 如果错误类型是由于尝试设置无效值导致的
+                if (e.Exception != null && e.Exception.GetType() == typeof(FormatException))
+                {
+                    LogUtil.Log("[ERROR] 格式转换错误，已取消编辑状态");
+                    MessageBox.Show("输入的值格式不正确，请检查输入值！");
+                    // 取消编辑状态
+                    dgv玩家列表.CancelEdit();
+                    e.ThrowException = false; // 阻止异常抛出
+                }
+                else if (e.Exception != null && e.Exception.GetType() == typeof(ArgumentException))
+                {
+                    LogUtil.Log("[ERROR] 参数异常，已阻止异常抛出");
+                    MessageBox.Show("参数错误，请检查数据有效性！");
+                    e.ThrowException = false; // 阻止异常抛出
+                }
+                else if (e.Exception != null)
+                {
+                    LogUtil.Log($"[ERROR] 其他数据错误: {e.Exception.GetType().Name}");
+                    MessageBox.Show($"数据操作错误: {e.Exception.Message}");
+                    e.ThrowException = false; // 阻止异常抛出
+                }
+            }
+            catch (Exception logEx)
+            {
+                // 如果日志记录本身出错，至少记录一个简单的错误
+                try
+                {
+                    LogUtil.Log($"[CRITICAL] DataError事件处理器异常: {logEx.Message}");
+                }
+                catch
+                {
+                    // 最后的保险，如果连简单日志都失败了
+                }
             }
         }
 
@@ -3092,21 +3227,39 @@ namespace RobotApp
         private void LoadTodayResult()
         {
             btn获取开奖数据.Enabled = false;
-            foreach (Result result in RobotClient.Get今日开奖结果())
+            
+            try
             {
-                Result r = RobotClient.ResultList.FirstOrDefault(r => r.Issue == result.Issue);
-                if (r == null)
+                // 先获取最新的开奖数据（这会更新数据库）
+                var latestResults = RobotClient.Get今日开奖结果();
+                
+                // 清空现有的结果列表，避免重复
+                RobotClient.ResultList.Clear();
+                
+                // 重新加载所有结果
+                foreach (var result in latestResults)
                 {
                     RobotClient.ResultList.Add(result);
                 }
-                else
-                {
-                    r.SetResult(result);
-                }
+                
+                // 数据源会自动更新，因为RobotClient.ResultList是BindingList
+                // 但我们需要触发界面刷新以显示最新数据
+                resultBindingSource.ResetBindings(false);
+                
+                // 按期号降序排序显示
+                SortDataGridView(ListSortDirection.Descending);
+                
+                LogUtil.Log($"开奖数据刷新完成，共加载 {RobotClient.ResultList.Count} 条记录");
             }
-            var resultList = RobotClient.ResultList.OrderByDescending(x => x.Issue);
-            resultBindingSource.DataSource = resultList;
-            btn获取开奖数据.Enabled = true;
+            catch (Exception ex)
+            {
+                LogUtil.Log($"刷新开奖数据失败: {ex.Message}");
+                MessageBox.Show($"刷新开奖数据失败: {ex.Message}");
+            }
+            finally
+            {
+                btn获取开奖数据.Enabled = true;
+            }
         }
 
         private void tsbPassword_Click(object sender, EventArgs e)

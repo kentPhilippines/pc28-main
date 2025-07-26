@@ -868,7 +868,15 @@ namespace RobotApp
             dgv回水计算.CurrentCell = null;
             foreach (DataGridViewRow dgvr in dgv回水计算.Rows)
             {
-                if (Convert.ToInt32(dgvr.Cells["回水计算_计算退分"].Value) == 0)
+                var cellValue = dgvr.Cells["回水计算_计算退分"].Value;
+                if (cellValue == null) continue;
+                string strValue = cellValue.ToString();
+                // 如果是"已退分"字符串，当需要显示有退分的时候显示它
+                if (strValue == "已退分")
+                {
+                    dgvr.Visible = chk只显示有退分的.Checked;
+                }
+                else if (int.TryParse(strValue, out int value) && value == 0)
                 {
                     dgvr.Visible = !chk只显示有退分的.Checked;
                 }
@@ -889,7 +897,14 @@ namespace RobotApp
 
         private void btn退分_Click(object sender, EventArgs e)
         {
-            if(dgv回水计算.Rows.Cast<DataGridViewRow>().Any(row => Convert.ToInt32(row.Cells["已退分"].Value) > 0))
+            if(dgv回水计算.Rows.Cast<DataGridViewRow>().Any(row => 
+            {
+                var cellValue = row.Cells["已退分"].Value;
+                if (cellValue == null) return false;
+                string strValue = cellValue.ToString();
+                if (strValue == "已退分" || strValue == "已挂入") return true;
+                return int.TryParse(strValue, out int value) && value > 0;
+            }))
             {
                 MessageBox.Show("退分已挂帐单");
                 return;
@@ -903,7 +918,11 @@ namespace RobotApp
                 foreach (DataGridViewRow dr in dgv回水计算.Rows)
                 {
                     string code = (string)dr.Cells["回水计算_Code"].Value;
-                    int water = Convert.ToInt32(dr.Cells["回水计算_计算退分"].Value);
+                    var cellValue = dr.Cells["回水计算_计算退分"].Value;
+                    if (cellValue == null) continue;
+                    string strValue = cellValue.ToString();
+                    if (strValue == "已退分") continue; // 已经退分，跳过
+                    if (!int.TryParse(strValue, out int water)) continue; // 转换失败，跳过
                     if (water > 0)
                     {
                         User user = RobotClient.GetUser(code);
@@ -939,7 +958,11 @@ namespace RobotApp
                 foreach (DataGridViewRow dr in dgv回水计算.Rows)
                 {
                     string code = (string)dr.Cells["回水计算_Code"].Value;
-                    int water = Convert.ToInt32(dr.Cells["剩余回水"].Value);
+                    var cellValue = dr.Cells["剩余回水"].Value;
+                    if (cellValue == null) continue;
+                    string strValue = cellValue.ToString();
+                    if (strValue == "已挂入") continue; // 已经挂账，跳过
+                    if (!int.TryParse(strValue, out int water)) continue; // 转换失败，跳过
                     if (water > 0)
                     {
                         User user = RobotClient.GetUser(code);
@@ -974,7 +997,11 @@ namespace RobotApp
                 foreach (DataGridViewRow dr in dgv回水计算.Rows)
                 {
                     string code = (string)dr.Cells["回水计算_Code"].Value;
-                    int water = Convert.ToInt32(dr.Cells["剩余流水"].Value);
+                    var cellValue = dr.Cells["剩余流水"].Value;
+                    if (cellValue == null) continue;
+                    string strValue = cellValue.ToString();
+                    if (strValue == "已挂入") continue; // 已经挂账，跳过
+                    if (!int.TryParse(strValue, out int water)) continue; // 转换失败，跳过
                     if (water > 0)
                     {
                         User user = RobotClient.GetUser(code);
@@ -1010,7 +1037,11 @@ namespace RobotApp
                 foreach (DataGridViewRow dr in dgv回水计算.Rows)
                 {
                     string code = (string)dr.Cells["回水计算_Code"].Value;
-                    int water = Convert.ToInt32(dr.Cells["已退分"].Value);
+                    var cellValue = dr.Cells["已退分"].Value;
+                    if (cellValue == null) continue;
+                    string strValue = cellValue.ToString();
+                    if (strValue == "已退分" || strValue == "已挂入") continue; // 已经退分，无法撤回
+                    if (!int.TryParse(strValue, out int water)) continue; // 转换失败，跳过
                     if (water > 0)
                     {
                         User user = RobotClient.GetUser(code);
@@ -1045,7 +1076,11 @@ namespace RobotApp
                 foreach (DataGridViewRow dr in dgv回水计算.Rows)
                 {
                     string code = (string)dr.Cells["回水计算_Code"].Value;
-                    int water = Convert.ToInt32(dr.Cells["剩余流水"].Value);
+                    var cellValue = dr.Cells["剩余流水"].Value;
+                    if (cellValue == null) continue;
+                    string strValue = cellValue.ToString();
+                    if (strValue == "已挂入") continue; // 已经挂账，无法撤回
+                    if (!int.TryParse(strValue, out int water)) continue; // 转换失败，跳过
                     if (water > 0)
                     {
                         User user = RobotClient.GetUser(code);
@@ -1074,6 +1109,86 @@ namespace RobotApp
             DateTime begin = DateTime.Parse(date开始日期.Text);
             DateTime end = DateTime.Parse(date结束日期.Text).AddDays(1);
             dgv帐变记录.DataSource = RecordDao.List(begin, end, txt昵称.Text, cbo帐变原因.SelectedItem);
+        }
+
+        private void dgv回水计算_DataError(object sender, DataGridViewDataErrorEventArgs e)
+        {
+            try
+            {
+                // 详细记录错误信息到系统日志
+                string errorDetails = $"DataGridView数据错误详情:";
+                errorDetails += $"\n  - 控件: dgv回水计算";
+                errorDetails += $"\n  - 行索引: {e.RowIndex}";
+                errorDetails += $"\n  - 列索引: {e.ColumnIndex}";
+                errorDetails += $"\n  - 错误上下文: {e.Context}";
+                
+                if (e.Exception != null)
+                {
+                    errorDetails += $"\n  - 异常类型: {e.Exception.GetType().Name}";
+                    errorDetails += $"\n  - 异常消息: {e.Exception.Message}";
+                    errorDetails += $"\n  - 堆栈跟踪: {e.Exception.StackTrace}";
+                }
+
+                // 尝试获取出错的单元格值
+                try
+                {
+                    if (e.RowIndex >= 0 && e.ColumnIndex >= 0 && 
+                        e.RowIndex < dgv回水计算.Rows.Count && 
+                        e.ColumnIndex < dgv回水计算.Columns.Count)
+                    {
+                        var cellValue = dgv回水计算[e.ColumnIndex, e.RowIndex].Value;
+                        var columnName = dgv回水计算.Columns[e.ColumnIndex].Name;
+                        errorDetails += $"\n  - 列名: {columnName}";
+                        errorDetails += $"\n  - 单元格值: {cellValue ?? "null"}";
+                        errorDetails += $"\n  - 值类型: {cellValue?.GetType().Name ?? "null"}";
+
+                        // 特别检查是否是我们之前修复的"已挂入"类型错误
+                        if (cellValue != null && cellValue.ToString().Contains("已"))
+                        {
+                            errorDetails += $"\n  - 特殊状态值检测: 发现状态字符串 '{cellValue}'";
+                            LogUtil.Log($"[WARNING] 检测到回水计算界面状态值转换错误，列 '{columnName}' 包含状态字符串 '{cellValue}'");
+                        }
+                    }
+                }
+                catch (Exception cellEx)
+                {
+                    errorDetails += $"\n  - 获取单元格信息失败: {cellEx.Message}";
+                }
+
+                // 记录到系统日志
+                LogUtil.Log($"[ERROR] {errorDetails}");
+
+                // 根据异常类型进行不同处理
+                if (e.Exception != null && e.Exception.GetType() == typeof(FormatException))
+                {
+                    LogUtil.Log("[ERROR] 回水计算界面格式转换错误，可能是状态字符串被错误转换");
+                    e.ThrowException = false; // 阻止异常抛出
+                }
+                else if (e.Exception != null && e.Exception.GetType() == typeof(ArgumentException))
+                {
+                    LogUtil.Log("[ERROR] 回水计算界面参数异常，可能是'已挂入'等状态值转换问题");
+                    e.ThrowException = false; // 阻止异常抛出
+                }
+                else if (e.Exception != null)
+                {
+                    LogUtil.Log($"[ERROR] 回水计算界面其他数据错误: {e.Exception.GetType().Name}");
+                    e.ThrowException = false; // 阻止异常抛出
+                }
+            }
+            catch (Exception logEx)
+            {
+                // 如果日志记录本身出错，至少记录一个简单的错误
+                try
+                {
+                    LogUtil.Log($"[CRITICAL] dgv回水计算_DataError事件处理器异常: {logEx.Message}");
+                }
+                catch
+                {
+                    // 最后的保险，如果连简单日志都失败了
+                }
+                // 确保仍然阻止异常抛出
+                e.ThrowException = false;
+            }
         }
     }
 }

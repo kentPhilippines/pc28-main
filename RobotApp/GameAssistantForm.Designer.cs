@@ -1406,6 +1406,7 @@
             dgv回水计算.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             dgv回水计算.Size = new System.Drawing.Size(1140, 614);
             dgv回水计算.TabIndex = 1;
+            dgv回水计算.DataError += dgv回水计算_DataError;
             // 
             // 回水计算_No
             // 

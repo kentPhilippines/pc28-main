@@ -377,11 +377,76 @@ public partial class MainForm : Form
 
     private void dgv托列表_DataError(object sender, DataGridViewDataErrorEventArgs e)
     {
-        // 忽略错误并设置默认值
-        e.ThrowException = false; // 阻止异常抛出
-        // 设置单元格的默认值
-        DataGridViewCell cell = dgv托列表.CurrentCell;
-        cell.Value = "错误！！！"; // 或者其他默认值
+        try
+        {
+            // 详细记录错误信息到系统日志
+            string errorDetails = $"DataGridView数据错误详情:";
+            errorDetails += $"\n  - 控件: dgv托列表";
+            errorDetails += $"\n  - 行索引: {e.RowIndex}";
+            errorDetails += $"\n  - 列索引: {e.ColumnIndex}";
+            errorDetails += $"\n  - 错误上下文: {e.Context}";
+            
+            if (e.Exception != null)
+            {
+                errorDetails += $"\n  - 异常类型: {e.Exception.GetType().Name}";
+                errorDetails += $"\n  - 异常消息: {e.Exception.Message}";
+                errorDetails += $"\n  - 堆栈跟踪: {e.Exception.StackTrace}";
+            }
+
+            // 尝试获取出错的单元格值
+            try
+            {
+                if (e.RowIndex >= 0 && e.ColumnIndex >= 0 && 
+                    e.RowIndex < dgv托列表.Rows.Count && 
+                    e.ColumnIndex < dgv托列表.Columns.Count)
+                {
+                    var cellValue = dgv托列表[e.ColumnIndex, e.RowIndex].Value;
+                    var columnName = dgv托列表.Columns[e.ColumnIndex].Name;
+                    errorDetails += $"\n  - 列名: {columnName}";
+                    errorDetails += $"\n  - 单元格值: {cellValue ?? "null"}";
+                    errorDetails += $"\n  - 值类型: {cellValue?.GetType().Name ?? "null"}";
+                }
+            }
+            catch (Exception cellEx)
+            {
+                errorDetails += $"\n  - 获取单元格信息失败: {cellEx.Message}";
+            }
+
+            // 记录到系统日志
+            LogUtil.Log($"[ERROR] {errorDetails}");
+
+            // 忽略错误并设置默认值
+            e.ThrowException = false; // 阻止异常抛出
+            
+            // 设置单元格的默认值
+            try
+            {
+                DataGridViewCell cell = dgv托列表.CurrentCell;
+                if (cell != null)
+                {
+                    LogUtil.Log($"[WARNING] 设置默认值到出错单元格: 行{e.RowIndex}, 列{e.ColumnIndex}");
+                    cell.Value = "错误！！！"; // 或者其他默认值
+                }
+            }
+            catch (Exception setEx)
+            {
+                LogUtil.Log($"[ERROR] 设置默认值失败: {setEx.Message}");
+            }
+        }
+        catch (Exception logEx)
+        {
+            // 如果日志记录本身出错，至少记录一个简单的错误
+            try
+            {
+                LogUtil.Log($"[CRITICAL] dgv托列表_DataError事件处理器异常: {logEx.Message}");
+            }
+            catch
+            {
+                // 最后的保险，如果连简单日志都失败了
+            }
+            // 确保仍然阻止异常抛出
+            e.ThrowException = false;
+        }
     }
 
     private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
